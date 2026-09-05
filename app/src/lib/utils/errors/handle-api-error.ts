@@ -28,8 +28,8 @@ export function handleApiError(error: unknown) {
                 code: appError.code,
                 message: appError.message,
                 details: appError.details,
-                timestamp: new Date().toISOString(),
             },
+            timestamp: new Date().toISOString(),
         },
         { status: appError.status },
     );
