@@ -1,21 +1,26 @@
 // use prisma-next
 
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  username  String?
-  name      String?
-  posts     Post[]
-  createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+enum RouteType {
+  page,
+  directory,
+  link,
+  // button
 }
 
-model Post {
-  id        Int      @id @default(autoincrement())
-  title     String
-  content   String?
-  author    User     @relation(fields: [authorId], references: [id])
-  authorId  Int
-  createdAt TimestamptzString @default(now())
-  updatedAt temporal.updatedAtString()
+model SystemRouter{
+  id String @id @default(cuid(2))
+  name String
+  path String
+  parentId String? @map("parent_id")
+  routeType RouteType
+  isActive Boolean @default(true) @map("is_active")
+  createdAt TimestamptzString @default(now()) @map("created_at")
+  updatedAt temporal.updatedAtString() @map("updated_at")
+  deletedAt temporal.deletedAtString() @map("deleted_at")
+
+  parent SystemRouter? @relation("ParentRouter", fields: [parentId], references: [id])
+  children SystemRouter[] @relation("ParentRouter")
+
+
+  @@map("system_routers")
 }
