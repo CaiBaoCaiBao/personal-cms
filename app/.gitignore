@@ -46,3 +46,7 @@ dist/
 # test
 **/__tests__/
 **/test/
+
+# prisma
+src/prisma/contract.json
+src/prisma/contract.d.ts

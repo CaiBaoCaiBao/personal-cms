@@ -35,7 +35,7 @@ import type {
 export type StorageHash =
   StorageHashBase<'10eda36664efc52ab5dd6af8f3756ff54e2e12a3492085b3f5d0ea675e508895'>;
 export type ExecutionHash =
-  ExecutionHashBase<'669c648c1b61837f3dc10cd7b2ebfb9c1157bd5b41278233dacdd9a3e6cbcf83'>;
+  ExecutionHashBase<'f9e42dd304a9fa9783070148528878484c3b8cd0a49e936f68f7efd0e53f2634'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -553,6 +553,15 @@ type ContractBase = Omit<
             readonly column: 'id';
           };
           readonly onCreate: { readonly kind: 'generator'; readonly id: 'cuid2' };
+        },
+        {
+          readonly ref: {
+            readonly namespace: 'public';
+            readonly table: 'system_routers';
+            readonly column: 'updated_at';
+          };
+          readonly onCreate: { readonly kind: 'generator'; readonly id: 'timestampNow' };
+          readonly onUpdate: { readonly kind: 'generator'; readonly id: 'timestampNow' };
         },
       ];
     };

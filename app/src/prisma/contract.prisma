@@ -17,7 +17,7 @@ model SystemRouter{
   routeType RouteType @map("route_type")
   isActive Boolean @default(true) @map("is_active")
   createdAt TimestamptzString @default(now()) @map("created_at")
-  updatedAt TimestamptzString @map("updated_at")
+  updatedAt temporal.updatedAtString() @map("updated_at")
   deletedAt TimestamptzString? @map("deleted_at")
 
   parent SystemRouter? @relation("ParentRouter", fields: [parentId], references: [id])

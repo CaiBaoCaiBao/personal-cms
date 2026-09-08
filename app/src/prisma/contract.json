@@ -302,7 +302,7 @@
     "storageHash": "10eda36664efc52ab5dd6af8f3756ff54e2e12a3492085b3f5d0ea675e508895"
   },
   "execution": {
-    "executionHash": "669c648c1b61837f3dc10cd7b2ebfb9c1157bd5b41278233dacdd9a3e6cbcf83",
+    "executionHash": "f9e42dd304a9fa9783070148528878484c3b8cd0a49e936f68f7efd0e53f2634",
     "mutations": {
       "defaults": [
         {
@@ -312,6 +312,21 @@
           },
           "ref": {
             "column": "id",
+            "namespace": "public",
+            "table": "system_routers"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator"
+          },
+          "ref": {
+            "column": "updated_at",
             "namespace": "public",
             "table": "system_routers"
           }
