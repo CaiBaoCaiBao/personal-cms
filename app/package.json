@@ -11,7 +11,8 @@
     "contract:emit": "prisma contract emit",
     "db:sign": "prisma db sign",
     "db:update": "prisma db update",
-    "test": "vitest"
+    "test": "vitest",
+    "shadcn:add":"pnpm dlx shadcn@latest add"
   },
   "dependencies": {
     "@base-ui/react": "^1.7.0",
