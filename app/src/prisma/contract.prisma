@@ -10,6 +10,7 @@ enum RouteType {
   @@type("pg/text@1")
 }
 
+// 系统路由
 model SystemRouter{
   id          String    @id @default(cuid(2))
   name        String
@@ -31,4 +32,43 @@ model SystemRouter{
   @@index([parentId, sortOrder])
   @@index([isActive, deletedAt])
   @@map("system_routers")
+}
+
+// 内容分类（文章/页面）
+model ContentCategory{
+  id String @id @default(cuid(2))
+  name String 
+  slug String
+  parentId String? @map("parent_id")
+  description String?
+  sortOrder Int @default(0) @map("sort_order")
+  isActive Boolean @default(true) @map("is_active")
+  createdAt TimestamptzString @default(now()) @map("created_at")
+  updatedAt temporal.updatedAtString() @map("updated_at")
+  deletedAt TimestamptzString? @map("deleted_at")
+
+  parent ContentCategory? @relation("ParentCategory", fields: [parentId], references: [id])
+  children ContentCategory[] @relation("ParentCategory")
+
+  @@unique([slug])
+  @@index([parentId, sortOrder])
+  @@index([isActive, deletedAt])
+  @@map("content_categories")
+}
+
+// 内容标签
+model ContentTag {
+  id String @id @default(cuid(2))
+  name String
+  slug String
+  description String?
+  color String?
+  isActive Boolean @default(true) @map("is_active")
+  createdAt TimestamptzString @default(now()) @map("created_at")
+  updatedAt temporal.updatedAtString() @map("updated_at")
+  deletedAt TimestamptzString? @map("deleted_at")
+
+  @@unique([slug])
+  @@index([isActive, deletedAt])
+  @@map("content_tags")
 }
