@@ -14,3 +14,8 @@ export type HttpBodyOptions = {
     headers?: HeadersInit;
     signal?: AbortSignal;
 }
+
+export type UploadProgressOptions= {
+    data: XMLHttpRequestBodyInit;
+    onProgress?: (progress: number) => void;
+}

@@ -2,7 +2,8 @@ import { AppError, ValidationError } from "../errors/app-error";
 import {
     HttpBodyOptions,
     HttpClientOptions,
-    HttpQueryOptions
+    HttpQueryOptions,
+    UploadProgressOptions
 } from "@/type/http.type";
 import { isEmpty } from "../is-empty";
 
@@ -184,6 +185,28 @@ export class HTTP {
                 signal,
                 body
             }
+        })
+    }
+    /**
+     * @description 需要上传进度的请求
+     * @param input 请求路径
+     * @param options 上传进度选项
+     * @returns 响应数据
+     */
+    static uploadProgress(input: string, options: UploadProgressOptions) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", input);
+            xhr.upload.onprogress = (e) => {
+                if (!e.lengthComputable) return;
+                options.onProgress && options.onProgress(e.loaded / e.total);
+            }
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) resolve(xhr.responseText);
+                else reject(new AppError("VALIDATION_ERROR", xhr.responseText || "Upload failed"));
+            };
+            xhr.onerror = () => reject(new AppError("VALIDATION_ERROR", "Upload failed"));
+            xhr.send(options.data);
         })
     }
 }
