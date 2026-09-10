@@ -17,6 +17,10 @@
             "codecId": "pg/text@1",
             "members": [
               {
+                "name": "group",
+                "value": "group"
+              },
+              {
                 "name": "page",
                 "value": "page"
               },
@@ -41,10 +45,24 @@
                   "kind": "scalar"
                 }
               },
+              "defaultOpen": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/bool@1",
+                  "kind": "scalar"
+                }
+              },
               "deletedAt": {
                 "nullable": true,
                 "type": {
                   "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "icon": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
                   "kind": "scalar"
                 }
               },
@@ -77,7 +95,7 @@
                 }
               },
               "path": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/text@1",
                   "kind": "scalar"
@@ -94,6 +112,13 @@
                   "entityName": "RouteType",
                   "namespaceId": "public",
                   "plane": "domain"
+                }
+              },
+              "sortOrder": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/int4@1",
+                  "kind": "scalar"
                 }
               },
               "updatedAt": {
@@ -141,8 +166,14 @@
                 "createdAt": {
                   "column": "created_at"
                 },
+                "defaultOpen": {
+                  "column": "default_open"
+                },
                 "deletedAt": {
                   "column": "deleted_at"
+                },
+                "icon": {
+                  "column": "icon"
                 },
                 "id": {
                   "column": "id"
@@ -161,6 +192,9 @@
                 },
                 "routeType": {
                   "column": "route_type"
+                },
+                "sortOrder": {
+                  "column": "sort_order"
                 },
                 "updatedAt": {
                   "column": "updated_at"
@@ -182,8 +216,8 @@
             "system_routers": {
               "checks": [
                 {
-                  "expression": "\"route_type\" IN ('page', 'directory', 'link')",
-                  "name": "system_routers_route_type_check_c1517005",
+                  "expression": "\"route_type\" IN ('group', 'page', 'directory', 'link')",
+                  "name": "system_routers_route_type_check_daa75011",
                   "prefix": "system_routers_route_type_check"
                 }
               ],
@@ -197,9 +231,23 @@
                   "nativeType": "timestamptz",
                   "nullable": false
                 },
+                "default_open": {
+                  "codecId": "pg/bool@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": false
+                  },
+                  "nativeType": "bool",
+                  "nullable": false
+                },
                 "deleted_at": {
                   "codecId": "pg/timestamptz-string@1",
                   "nativeType": "timestamptz",
+                  "nullable": true
+                },
+                "icon": {
+                  "codecId": "pg/text@1",
+                  "nativeType": "text",
                   "nullable": true
                 },
                 "id": {
@@ -229,7 +277,7 @@
                 "path": {
                   "codecId": "pg/text@1",
                   "nativeType": "text",
-                  "nullable": false
+                  "nullable": true
                 },
                 "route_type": {
                   "codecId": "pg/text@1",
@@ -241,6 +289,15 @@
                     "namespaceId": "public",
                     "plane": "storage"
                   }
+                },
+                "sort_order": {
+                  "codecId": "pg/int4@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": 0
+                  },
+                  "nativeType": "int4",
+                  "nullable": false
                 },
                 "updated_at": {
                   "codecId": "pg/timestamptz-string@1",
@@ -269,10 +326,28 @@
               "indexes": [
                 {
                   "columns": [
+                    "is_active",
+                    "deleted_at"
+                  ],
+                  "name": "system_routers_is_active_deleted_at_idx_fb20b6d1",
+                  "prefix": "system_routers_is_active_deleted_at_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "parent_id"
                   ],
                   "name": "system_routers_parent_id_idx_ab33b399",
                   "prefix": "system_routers_parent_id_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
+                    "parent_id",
+                    "sort_order"
+                  ],
+                  "name": "system_routers_parent_id_sort_order_idx_e2696ee4",
+                  "prefix": "system_routers_parent_id_sort_order_idx",
                   "unique": false
                 }
               ],
@@ -281,13 +356,20 @@
                   "id"
                 ]
               },
-              "uniques": []
+              "uniques": [
+                {
+                  "columns": [
+                    "path"
+                  ]
+                }
+              ]
             }
           },
           "valueSet": {
             "RouteType": {
               "kind": "valueSet",
               "values": [
+                "group",
                 "page",
                 "directory",
                 "link"
@@ -299,7 +381,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "10eda36664efc52ab5dd6af8f3756ff54e2e12a3492085b3f5d0ea675e508895"
+    "storageHash": "fce5a87817cdc4d3690c9e2c8f8bc9c0872a588ef425fb5005b1c5d35357db37"
   },
   "execution": {
     "executionHash": "f9e42dd304a9fa9783070148528878484c3b8cd0a49e936f68f7efd0e53f2634",
