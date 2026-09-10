@@ -19,10 +19,6 @@ import { systemRouterKeys } from "@/query/system-router.query";
 import { AppError } from "@/lib/utils/errors/app-error";
 import type { ApiResult } from "@/type/api-result.type";
 
-interface Props {
-    options: FormOptions;
-}
-
 function toFormValues(row?: SystemRouterListVO): CreateSystemRouterFormValues {
     if (!row) return defaultValueCreateSystemRouter;
 
@@ -138,7 +134,7 @@ export function applyRouteTypeValues(
     };
 }
 
-export function useSystemRouterForm({ options }: Props) {
+export function useSystemRouterForm( options : FormOptions) {
     const router = useRouter();
     const queryClient = useQueryClient();
 
@@ -158,9 +154,19 @@ export function useSystemRouterForm({ options }: Props) {
                     params: dto as unknown as Record<string, unknown>,
                 });
             await assertApiOk(res);
+            // 侧栏仍挂载：只失效并立刻重拉 nav
             await queryClient.invalidateQueries({
-                queryKey: systemRouterKeys.all,
+                queryKey: systemRouterKeys.nav(),
             });
+            // 列表交给跳转后的 SSR hydrate；清掉旧 list，避免 stale 缓存抢在 hydrate 前发起客户端 GET
+            queryClient.removeQueries({
+                queryKey: systemRouterKeys.lists(),
+            });
+            if (options.id) {
+                queryClient.removeQueries({
+                    queryKey: systemRouterKeys.detail(options.id),
+                });
+            }
             router.push("/admin/system/router");
         },
     });

@@ -11,6 +11,7 @@ import { useState } from "react";
 import { HTTP } from "@/lib/utils/https";
 import { AppError } from "@/lib/utils/errors/app-error";
 import type { ApiResult } from "@/type/api-result.type";
+import { useThrottleCallback } from "@/hooks/use-throttle-callback";
 
 type PageState = {
     loading: boolean;
@@ -18,12 +19,14 @@ type PageState = {
     deleteError: string | null;
     deleteDrawerOpen: boolean;
     deleteRow: SystemRouterTreeNode | null;
+    refreshing: boolean;
 };
 
 type PageActions = {
     setDeleteDrawerOpen: (open: boolean) => void;
     setDeleteRow: (row: SystemRouterTreeNode | null) => void;
     confirmDelete: () => void;
+    handleRefreshRouter: () => void;
 };
 
 type PageData = {
@@ -55,6 +58,8 @@ export function usePage(
         row: null,
     });
 
+    const [refreshing, setRefreshing] = useState(false);
+
     const deleteMutation = useMutation({
         mutationFn: async (id: string) => {
             const res = await HTTP.DELETE("/api/admin/v1/system-router", {
@@ -85,6 +90,13 @@ export function usePage(
             if (!id || deleteMutation.isPending) return;
             deleteMutation.mutate(id);
         },
+        handleRefreshRouter: useThrottleCallback(async () => {
+            setRefreshing(true);
+            await queryClient.invalidateQueries({
+                queryKey: systemRouterKeys.nav(),
+            });
+            setRefreshing(false);
+        })
     };
 
     const data: PageData = {
@@ -98,6 +110,7 @@ export function usePage(
             deleteError: deleteMutation.error?.message ?? null,
             deleteDrawerOpen: drawer.open,
             deleteRow: drawer.row,
+            refreshing: refreshing,
         },
         actions,
         data,

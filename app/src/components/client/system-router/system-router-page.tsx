@@ -1,7 +1,6 @@
 "use client";
 
 import { useMemo } from "react";
-import { useQueryClient } from "@tanstack/react-query";
 import { SystemRouterTable } from "./system-router-table";
 import { SystemRouterTableColumn } from "@/components/client/system-router/system-router-table-column";
 import { usePage } from "@/hooks/system-router/use-page";
@@ -9,15 +8,14 @@ import type { SystemRouterListQuery } from "@/type/system-router.type";
 import { Button } from "@/components/ui/button";
 import { Plus, RefreshCcw } from "lucide-react";
 import Link from "next/link";
-import { systemRouterKeys } from "@/query/system-router.query";
 import { DeleteDrawer } from "./delete-drawer";
+import { Spinner } from "@/components/ui/spinner";
 
 interface Props {
     params: SystemRouterListQuery;
 }
 
 export function SystemRouterPage({ params }: Props) {
-    const queryClient = useQueryClient();
     const [state, actions, data] = usePage({ params });
     const columns = useMemo(
         () =>
@@ -43,20 +41,23 @@ export function SystemRouterPage({ params }: Props) {
                 <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => {
-                        void queryClient.invalidateQueries({
-                            queryKey: systemRouterKeys.nav(),
-                        });
-                    }}
+                    onClick={actions.handleRefreshRouter}
+                    disabled={state.refreshing}
                 >
-                    <RefreshCcw />
-                    刷新侧栏
+                    {state.refreshing ? (<>
+                        <Spinner /> Refreshing...
+                    </>) : (<>
+                        <RefreshCcw /> Refresh Navigation
+                    </>)}
+
                 </Button>
             </div>
-            <SystemRouterTable
-                data={data.list}
-                columns={columns}
-            />
+            <div className="mt-4">
+                <SystemRouterTable
+                    data={data.list}
+                    columns={columns}
+                />
+            </div>
             <DeleteDrawer
                 row={state.deleteRow}
                 open={state.deleteDrawerOpen}
