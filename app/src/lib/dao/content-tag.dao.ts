@@ -7,8 +7,9 @@ import type {
     InputContentTag,
     ContentTagItemVO
 } from "@/type/content-tag.type";
-import type { Pagination } from "@/type/pagination.type";
 import { CONTENT_TAG_ITEM_KEYS } from "@/constant/content-tag.constant";
+import { PageQueryDto } from "../schema/content-tag.schema";
+import { or } from "@prisma/orm-postgres/orm-client";
 
 export class ContentTagDao {
     /** @description 创建标签 */
@@ -33,27 +34,29 @@ export class ContentTagDao {
         }
     }
     /** @description 查询标签列表 */
-    static async query(
-        pageNumber: number,
-        pageSize: number
-    ) {
+    static async query(query: PageQueryDto) {
         try {
-            const list = await db.orm.public.ContentTag.where({
-                deletedAt: null
-            })
-                .orderBy((t) => t.createdAt.desc())
-                .select(...CONTENT_TAG_ITEM_KEYS)
-                .limit(pageSize)
-                .offset((pageNumber - 1) * pageSize)
-                .all();
-
-            const { total } = await db.orm.public.ContentTag.where({
-                deletedAt: null
-            }).aggregate((a) => ({ total: a.count() }));
-            return {
-                list,
-                total,
+            let base = db.orm.public.ContentTag.where({
+                deletedAt: null,
+            });
+            if (typeof query.isActive === "boolean") {
+                base = base.where({ isActive: query.isActive });
             }
+            const keyword = query.keyword?.trim();
+            if (keyword) {
+                const pattern = `%${keyword.replace(/[%_]/g, "\\$&")}%`;
+                base = base.where((t) =>
+                    or(t.name.ilike(pattern), t.slug.ilike(pattern)),
+                );
+            }
+            const list = await base
+                .orderBy((t) => t.createdAt.asc())
+                .select(...CONTENT_TAG_ITEM_KEYS)
+                .limit(query.pageSize)
+                .offset((query.pageNumber - 1) * query.pageSize)
+                .all();
+            const { total } = await base.aggregate((a) => ({ total: a.count() }));
+            return { list, total };
         } catch (e) {
             if (e instanceof AppError) throw e;
             throw mapPrismaError(e);

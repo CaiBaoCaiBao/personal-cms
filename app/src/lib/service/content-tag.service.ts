@@ -14,15 +14,17 @@ export class ContentTagService {
      */
     static async createContentTag(dto: CreateContentTagDto) {
         try {
-            const existing = await ContentTagDao.findBySlug(dto.slug);
-            if (existing) {
+            const bySlug = await ContentTagDao.findBySlug(dto.slug);
+            if (bySlug) {
                 throw new AppError("CONFLICT", "Content tag already exists", 409, {
                     fields: ["slug"],
                     values: [dto.slug],
                     message: "Content tag already exists",
                 });
             }
-            await ContentTagDao.create(dto);
+            await ContentTagDao.create({
+                ...dto,
+            });
         } catch (e) {
             if (e instanceof AppError) throw e;
             throw new AppError(
@@ -48,7 +50,17 @@ export class ContentTagService {
                     message: "Content tag not found",
                 });
             }
-            await ContentTagDao.update(id, dto);
+            const bySlug = await ContentTagDao.findBySlug(dto.slug);
+            if (bySlug && bySlug.id !== id) {
+                throw new AppError("CONFLICT", "Content tag already exists", 409, {
+                    fields: ["slug"],
+                    values: [dto.slug],
+                    message: "Content tag already exists",
+                });
+            }
+            await ContentTagDao.update(id, {
+                ...dto,
+            });
         } catch (e) {
             if (e instanceof AppError) throw e;
             throw new AppError("INTERNAL_ERROR", "Failed to update content tag", 500, {
@@ -82,7 +94,7 @@ export class ContentTagService {
         const {
             list,
             total
-        } = await ContentTagDao.query(query.pageNumber, query.pageSize);
+        } = await ContentTagDao.query(query);
         return {
             list,
             total,
