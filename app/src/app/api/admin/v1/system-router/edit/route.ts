@@ -31,3 +31,15 @@ export const PUT = apiHandler(async (req: Request) => {
         timestamp: new Date().toISOString(),
     };
 });
+
+
+
+export const POST = apiHandler(async (req: Request) => {
+    const dto = await parseJsonBody(req, createSystemRouterSchema);
+    await SystemRouterService.createSystemRouter(dto);
+    return {
+        ok: true,
+        data: null,
+        timestamp: new Date().toISOString(),
+    };
+})

@@ -150,7 +150,7 @@ export function useSystemRouterForm( options : FormOptions) {
                     `/api/admin/v1/system-router/edit?id=${encodeURIComponent(options.id)}`,
                     { params: dto as unknown as Record<string, unknown> },
                 )
-                : await HTTP.POST("/api/admin/v1/system-router", {
+                : await HTTP.POST("/api/admin/v1/system-router/edit", {
                     params: dto as unknown as Record<string, unknown>,
                 });
             await assertApiOk(res);

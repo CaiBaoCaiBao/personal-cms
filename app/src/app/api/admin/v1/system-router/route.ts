@@ -24,7 +24,7 @@ export const DELETE = apiHandler(async (req: Request) => {
     await SystemRouterService.deleteSystemRouter(id);
     return {
         ok: true,
-        data: null,  
+        data: null,
         timestamp: new Date().toISOString(),
     };
 })
