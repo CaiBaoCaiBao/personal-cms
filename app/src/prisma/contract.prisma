@@ -10,6 +10,15 @@ enum RouteType {
   @@type("pg/text@1")
 }
 
+enum ArticleStatus {
+  draft // 草稿
+  published // 已发布
+  archived // 已归档
+  scheduled // 已安排
+
+  @@type("pg/text@1")
+}
+
 // 系统路由
 model SystemRouter{
   id          String    @id @default(cuid(2))
@@ -49,6 +58,7 @@ model ContentCategory{
 
   parent ContentCategory? @relation("ParentCategory", fields: [parentId], references: [id])
   children ContentCategory[] @relation("ParentCategory")
+  articles Article[] @relation("ArticleCategory")
 
   @@unique([slug])
   @@index([parentId, sortOrder])
@@ -67,7 +77,67 @@ model ContentTag {
   updatedAt temporal.updatedAtString() @map("updated_at")
   deletedAt TimestamptzString? @map("deleted_at")
 
+  articles Article[]
+
   @@unique([slug])
   @@index([isActive, deletedAt])
   @@map("content_tags")
+}
+
+// 文章内容
+model Article{
+  id String @id @default(cuid(2))
+  title String
+  slug String
+  htmlContent String
+  jsonContent Json
+  coverImg String? @map("cover_img")
+  wordCount Int @default(0) @map("word_count")
+  readMinutes Int @default(0) @map("read_minutes")
+  status ArticleStatus @default(draft)
+  createdAt TimestamptzString @default(now()) @map("created_at")
+  updatedAt temporal.updatedAtString() @map("updated_at")
+  publishedAt TimestamptzString? @map("published_at")
+  archivedAt TimestamptzString? @map("archived_at")
+  scheduledAt TimestamptzString? @map("scheduled_at")
+  deletedAt TimestamptzString? @map("deleted_at")
+  contentCategoryId String? @map("content_category_id")
+
+  contentCategory ContentCategory? @relation("ArticleCategory", fields: [contentCategoryId], references: [id])
+  contentTags ContentTag[]
+  relatedFrom ArticleRelation[] @relation("RelatedFrom")
+  relatedTo ArticleRelation[] @relation("RelatedTo")
+
+  @@unique([slug])
+  @@index([title])
+  @@index([status, deletedAt, publishedAt], name: "articles_pub_timeline")
+  @@index([contentCategoryId, status, deletedAt, publishedAt], name: "articles_cat_pub_timeline")
+  @@map("articles")
+}
+
+// 文章-标签
+model ArticleTag {
+  articleId String @map("article_id")
+  tagId     String @map("tag_id")
+
+  article Article    @relation(fields: [articleId], references: [id])
+  tag     ContentTag @relation(fields: [tagId], references: [id])
+
+  @@id([articleId, tagId])
+  @@index([tagId])
+  @@map("article_tags")
+}
+
+// 手工关联文章（有序）
+model ArticleRelation {
+  articleId        String @map("article_id")
+  relatedArticleId String @map("related_article_id")
+  sortOrder        Int    @default(0) @map("sort_order")
+
+  article        Article @relation("RelatedFrom", fields: [articleId], references: [id])
+  relatedArticle Article @relation("RelatedTo", fields: [relatedArticleId], references: [id])
+
+  @@id([articleId, relatedArticleId])
+  @@index([articleId, sortOrder])
+  @@map("article_relations")
 }
