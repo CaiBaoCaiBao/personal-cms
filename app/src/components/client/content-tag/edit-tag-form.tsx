@@ -124,7 +124,7 @@ export function EditTagForm({ form, formId }: Props) {
                         return (
                             <Field data-invalid={isInvalid}>
                                 <FieldLabel htmlFor={field.name}>
-                                    Slug
+                                    标识
                                     <RequiredMark />
                                 </FieldLabel>
                                 <FieldContent>

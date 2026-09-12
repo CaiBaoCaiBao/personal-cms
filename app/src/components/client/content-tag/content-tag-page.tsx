@@ -11,7 +11,7 @@ import { ContentTagTable } from "./content-tag-table";
 import { ContentTagTableColumn } from "./content-tag-table-column";
 import { PageQueryDto } from "@/lib/schema/content-tag.schema";
 import { PageOptions } from "@/type/content-tag.type";
-import { Search } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import {
     InputGroup,
     InputGroupInput,
@@ -51,22 +51,27 @@ export function ContentTagPage({ params }: Props) {
 
     return (
         <div>
-            <div className="flex flex-col sm:flex-row gap-2">
-                <InputGroup>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <InputGroup className="sm:max-w-sm">
                     <InputGroupAddon>
                         <Search />
                     </InputGroupAddon>
                     <InputGroupInput
                         value={state.keyword}
-                        placeholder="Enter keyword to search tag name and slug"
+                        placeholder="搜索名称或标识"
                         onChange={(e) => actions.setKeyword(e.target.value)}
                     />
                 </InputGroup>
-                <Button onClick={actions.openCreate} className="w-full sm:w-auto">
-                    Create Tag
+                <Button
+                    size="sm"
+                    onClick={actions.openCreate}
+                    className="w-full sm:w-auto"
+                >
+                    <Plus />
+                    新增
                 </Button>
             </div>
-            <div className="flex flex-col gap-2 mt-4">
+            <div className="mt-4 flex flex-col gap-3">
                 <ContentTagTable
                     data={data.list}
                     columns={columns}

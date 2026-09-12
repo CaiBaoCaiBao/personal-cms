@@ -13,6 +13,9 @@ import { ContentTagItemVO } from "@/type/content-tag.type";
 import { Badge } from "@/components/ui/badge";
 import { ContentTagActions } from "./content-tag-actions";
 
+const checkboxClass =
+    "size-4 rounded-[4px] border border-input accent-primary";
+
 export const features = tableFeatures({
     columnFilteringFeature,
     rowSortingFeature,
@@ -50,7 +53,7 @@ export function ContentTagTableColumn({
                         }
                     }}
                     onChange={table.getToggleAllRowsSelectedHandler()}
-                    className="size-4 accent-primary"
+                    className={checkboxClass}
                 />
             ),
             cell: ({ row }) => (
@@ -60,36 +63,48 @@ export function ContentTagTableColumn({
                     checked={row.getIsSelected()}
                     disabled={!row.getCanSelect()}
                     onChange={row.getToggleSelectedHandler()}
-                    className="size-4 accent-primary"
+                    className={checkboxClass}
                 />
             ),
         }),
         columnsHelper.accessor("name", {
             header: "名称",
             cell: ({ getValue }) => (
-                <span className="font-medium">{getValue()}</span>
+                <span className="truncate font-medium">{getValue()}</span>
             ),
         }),
         columnsHelper.accessor("slug", {
-            header: "Slug",
+            header: "标识",
             cell: ({ getValue }) => (
-                <span className="font-mono text-xs text-muted-foreground">
+                <code className="rounded-md bg-muted/70 px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
                     {getValue()}
-                </span>
+                </code>
             ),
         }),
         columnsHelper.accessor("isActive", {
             header: "状态",
             cell: ({ getValue }) =>
                 getValue() ? (
-                    <Badge variant="default">启用</Badge>
+                    <Badge
+                        variant="secondary"
+                        className="border-transparent bg-emerald-500/10 font-normal text-emerald-700 dark:text-emerald-300"
+                    >
+                        <span className="size-1.5 rounded-full bg-emerald-500" />
+                        启用
+                    </Badge>
                 ) : (
-                    <Badge variant="outline">停用</Badge>
+                    <Badge
+                        variant="outline"
+                        className="font-normal text-muted-foreground"
+                    >
+                        <span className="size-1.5 rounded-full bg-muted-foreground/50" />
+                        停用
+                    </Badge>
                 ),
         }),
         columnsHelper.display({
             id: "actions",
-            header: "操作",
+            header: () => <span className="sr-only">操作</span>,
             cell: ({ row }) => (
                 <ContentTagActions
                     row={row.original}
