@@ -24,7 +24,7 @@ export function Pagination({
 }: Props) {
     const pageCount = pageSize > 0 ? Math.max(1, Math.ceil(total / pageSize)) : 1;
     const current = Math.min(Math.max(pageNumber, 1), pageCount);
-    if (pageCount <= 1) return null;
+    if (total === 0) return null;
 
     const rangeStart = (current - 1) * pageSize + 1;
     const rangeEnd = Math.min(current * pageSize, total);
@@ -33,15 +33,19 @@ export function Pagination({
     const atLast = current >= pageCount;
 
     return (
-        <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-xl border bg-card px-3 py-2.5 shadow-xs sm:flex-row sm:items-center sm:justify-between">
+            <p className="order-last text-center text-xs tabular-nums text-muted-foreground sm:order-first sm:text-left">
+                {rangeStart}–{rangeEnd} / 共 {total} 条
+            </p>
             <PaginationComponent className="mx-0 w-auto">
                 <PaginationContent>
                     <PaginationItem>
                         <PaginationPrevious
+                            text="上一页"
                             aria-disabled={atFirst}
                             tabIndex={atFirst ? -1 : undefined}
                             className={cn(
-                                "cursor-pointer",
+                                "h-8 cursor-pointer",
                                 atFirst && "pointer-events-none opacity-50",
                             )}
                             onClick={() => !atFirst && onPageChange(current - 1)}
@@ -57,7 +61,7 @@ export function Pagination({
                             <PaginationItem key={page}>
                                 <PaginationLink
                                     isActive={current === page}
-                                    className="cursor-pointer"
+                                    className="size-8 cursor-pointer"
                                     onClick={() => onPageChange(page)}
                                 >
                                     {page}
@@ -68,10 +72,11 @@ export function Pagination({
 
                     <PaginationItem>
                         <PaginationNext
+                            text="下一页"
                             aria-disabled={atLast}
                             tabIndex={atLast ? -1 : undefined}
                             className={cn(
-                                "cursor-pointer",
+                                "h-8 cursor-pointer",
                                 atLast && "pointer-events-none opacity-50",
                             )}
                             onClick={() => !atLast && onPageChange(current + 1)}
@@ -79,9 +84,6 @@ export function Pagination({
                     </PaginationItem>
                 </PaginationContent>
             </PaginationComponent>
-            <p className="text-sm text-muted-foreground tabular-nums">
-                {rangeStart}–{rangeEnd} of {total}
-            </p>
         </div>
     );
 }
