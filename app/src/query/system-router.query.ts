@@ -2,16 +2,16 @@ import { queryOptions } from "@tanstack/react-query";
 import { HTTP } from "@/lib/utils/https";
 import type {
     AdminNavGroup,
-    SystemRouterListQuery,
     SystemRouterTreeNode,
     SystemRouterListVO,
 } from "@/type/system-router.type";
 import type { ApiSuccess } from "@/type/api-result.type";
+import type { ListSystemRouterQueryDTO } from "@/lib/schema/system-router.schema";
 
 export const systemRouterKeys = {
     all: ["system-router"] as const,
     lists: () => [...systemRouterKeys.all, "list"] as const,
-    list: (params: SystemRouterListQuery) =>
+    list: (params: ListSystemRouterQueryDTO) =>
         [...systemRouterKeys.lists(), params] as const,
     detail: (id: string) =>
         [...systemRouterKeys.all, "detail", id] as const,
@@ -19,7 +19,7 @@ export const systemRouterKeys = {
 };
 
 export const systemRouterListQuery = {
-    list: (params: SystemRouterListQuery) =>
+    list: (params: ListSystemRouterQueryDTO) =>
         queryOptions({
             queryKey: systemRouterKeys.list(params),
             queryFn: async ({ signal }) => {

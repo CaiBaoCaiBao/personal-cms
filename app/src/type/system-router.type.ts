@@ -1,4 +1,5 @@
 import type { FieldInputTypes, FieldOutputTypes } from "@/prisma/contract";
+import type { ListSystemRouterQueryDTO } from "@/lib/schema/system-router.schema";
 
 export type RouteType = FieldInputTypes["public"]["SystemRouter"]["routeType"];
 
@@ -56,13 +57,6 @@ export type SystemRouterParentOption = {
     routeType: Extract<RouteType, "group" | "directory">;
 };
 
-/** 管理列表查询条件 */
-export type SystemRouterListQuery = {
-    keyword?: string;
-    routeType?: RouteType;
-    isActive?: boolean;
-};
-
 /** 列表行VO */
 export type SystemRouterListVO = {
     id: string;
@@ -87,7 +81,7 @@ export type SystemRouterTreeNode = SystemRouterListVO & {
 };
 
 export type PageOptions = {
-    params: SystemRouterListQuery;
+    params: ListSystemRouterQueryDTO;
 };
 
 export type FormOptions = {

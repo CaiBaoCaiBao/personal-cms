@@ -13,12 +13,10 @@ import type {
     SystemRouterParentOption,
     SystemRouterListVO,
     SystemRouterTreeNode,
-    SystemRouterListQuery,
 } from "@/type/system-router.type";
 import { AppError } from "@/lib/utils/errors/app-error";
 import { ROUTE_TYPE_LABEL_MAP } from "@/constant/system-router.constant";
 import type { SystemRouterRow } from "@/type/system-router.type";
-import { TelemetryPlugin } from "next/dist/build/webpack/plugins/telemetry-plugin/telemetry-plugin";
 
 export class SystemRouterService {
     /**
@@ -283,7 +281,7 @@ export class SystemRouterService {
      */
     private static pruneTree(
         nodes: SystemRouterTreeNode[],
-        query: SystemRouterListQuery,
+        query: ListSystemRouterQueryDTO,
     ): SystemRouterTreeNode[] {
         const hasFilter =
             Boolean(query.keyword) ||

@@ -4,15 +4,15 @@ import { useMemo } from "react";
 import { SystemRouterTable } from "./system-router-table";
 import { SystemRouterTableColumn } from "@/components/client/system-router/system-router-table-column";
 import { usePage } from "@/hooks/system-router/use-page";
-import type { SystemRouterListQuery } from "@/type/system-router.type";
 import { Button } from "@/components/ui/button";
 import { Plus, RefreshCcw } from "lucide-react";
 import Link from "next/link";
 import { DeleteDrawer } from "./delete-drawer";
 import { Spinner } from "@/components/ui/spinner";
+import { ListSystemRouterQueryDTO } from "@/lib/schema/system-router.schema";
 
 interface Props {
-    params: SystemRouterListQuery;
+    params: ListSystemRouterQueryDTO;
 }
 
 export function SystemRouterPage({ params }: Props) {
