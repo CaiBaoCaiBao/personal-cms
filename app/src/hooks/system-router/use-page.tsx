@@ -7,11 +7,23 @@ import type {
     SystemRouterTreeNode,
     PageOptions,
 } from "@/type/system-router.type";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { HTTP } from "@/lib/utils/https";
 import { AppError } from "@/lib/utils/errors/app-error";
 import type { ApiResult } from "@/type/api-result.type";
 import { useThrottleCallback } from "@/hooks/use-throttle-callback";
+import type { ListSystemRouterQueryDTO } from "@/lib/schema/system-router.schema";
+
+function toSearch(params: ListSystemRouterQueryDTO) {
+    const sp = new URLSearchParams();
+    if (params.keyword) sp.set("keyword", params.keyword);
+    if (params.routeType) sp.set("routeType", params.routeType);
+    if (typeof params.isActive === "boolean") {
+        sp.set("isActive", String(params.isActive));
+    }
+    return sp.toString();
+}
 
 type PageState = {
     loading: boolean;
@@ -20,6 +32,8 @@ type PageState = {
     deleteDrawerOpen: boolean;
     deleteRow: SystemRouterTreeNode | null;
     refreshing: boolean;
+    keyword: string;
+    isActive: boolean | undefined;
 };
 
 type PageActions = {
@@ -27,6 +41,8 @@ type PageActions = {
     setDeleteRow: (row: SystemRouterTreeNode | null) => void;
     confirmDelete: () => void;
     handleRefreshRouter: () => void;
+    setKeyword: (keyword: string) => void;
+    setIsActive: (isActive: boolean | undefined) => void;
 };
 
 type PageData = {
@@ -48,7 +64,32 @@ export function usePage(
 ): [PageState, PageActions, PageData] {
     const { params } = options;
     const queryClient = useQueryClient();
-    const query = useQuery(systemRouterListQuery.list(params));
+    const router = useRouter();
+    const pathname = usePathname();
+
+    const [keyword, setKeyword] = useState(params.keyword ?? "");
+    const [queryParams, setQueryParams] = useState(params);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            const nextKeyword = keyword.trim() || undefined;
+            setQueryParams((prev) => {
+                if (prev.keyword === nextKeyword) return prev;
+                return { ...prev, keyword: nextKeyword };
+            });
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [keyword]);
+
+    useEffect(() => {
+        const qs = toSearch(queryParams);
+        const href = qs ? `${pathname}?${qs}` : pathname;
+        const current = `${window.location.pathname}${window.location.search}`;
+        if (current === href) return;
+        router.replace(href, { scroll: false });
+    }, [queryParams, pathname, router]);
+
+    const query = useQuery(systemRouterListQuery.list(queryParams));
 
     const [drawer, setDrawer] = useState<{
         open: boolean;
@@ -96,7 +137,16 @@ export function usePage(
                 queryKey: systemRouterKeys.nav(),
             });
             setRefreshing(false);
-        })
+        }),
+        setKeyword: (value) => {
+            setKeyword(value);
+        },
+        setIsActive: (isActive) => {
+            setQueryParams((prev) => {
+                if (prev.isActive === isActive) return prev;
+                return { ...prev, isActive };
+            });
+        },
     };
 
     const data: PageData = {
@@ -111,6 +161,8 @@ export function usePage(
             deleteDrawerOpen: drawer.open,
             deleteRow: drawer.row,
             refreshing: refreshing,
+            keyword,
+            isActive: queryParams.isActive,
         },
         actions,
         data,
