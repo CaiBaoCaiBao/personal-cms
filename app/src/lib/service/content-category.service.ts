@@ -1,7 +1,13 @@
 import "server-only";
 import { ListContentCategoryQueryDTO, SaveContentCategoryDto } from "@/lib/schema/content-category.schema";
 import { ContentCategoryDao } from "@/lib/dao/content-category.dao";
-import { ContentCategoryItemVO, ContentCategoryRow, ContentCategoryTreeNode, InputContentCategory } from "@/type/content-category.type";
+import {
+    ContentCategoryItemVO,
+    ContentCategoryParentOption,
+    ContentCategoryRow,
+    ContentCategoryTreeNode,
+    InputContentCategory,
+} from "@/type/content-category.type";
 import { AppError } from "@/lib/utils";
 import { CONTENT_CATEGORY_ITEM_KEYS } from "@/constant/content-category.constant";
 
@@ -90,16 +96,43 @@ export class ContentCategoryService {
     /**
      * @description 父级下拉选项（可选排除自身及子孙，避免成环）
      */
-    static async listParentOptions(excludeId?: string) {
-        const rows = await ContentCategoryDao.findParentCandidates();
-        const filtered = excludeId
-            ? rows.filter((row) => !this.isSelfOrDescendant(row.id, excludeId, rows))
-            : rows;
-        return filtered.map((row) => ({
-            id: row.id,
-            name: row.name,
-            slug: row.slug,
-        }));
+    static async listParentOptions(
+        excludeId?: string,
+    ): Promise<ContentCategoryParentOption[]> {
+        try {
+            const rows = await ContentCategoryDao.findParentCandidates();
+            const filtered = excludeId
+                ? rows.filter((row) => !this.isSelfOrDescendant(row.id, excludeId, rows))
+                : rows;
+            return filtered.map((row) => ({
+                id: row.id,
+                name: row.name,
+                slug: row.slug,
+            }));
+        } catch (e) {
+            if (e instanceof AppError) throw e;
+            throw new AppError("INTERNAL_ERROR", "查询父级分类失败", 500);
+        }
+    }
+    /**
+     * @description 获取单个分类
+     */
+    static async getContentCategory(id: string): Promise<ContentCategoryItemVO> {
+        try {
+            const row = await ContentCategoryDao.findById(id);
+            if (!row) {
+                throw new AppError("NOT_FOUND", "分类不存在", 404);
+            }
+            let parentName: string | null = null;
+            if (row.parentId) {
+                const parent = await ContentCategoryDao.findById(row.parentId);
+                parentName = parent?.name ?? null;
+            }
+            return this.toListVO(row, parentName);
+        } catch (e) {
+            if (e instanceof AppError) throw e;
+            throw new AppError("INTERNAL_ERROR", "查询分类失败", 500);
+        }
     }
     /**
      * @description 删除分类

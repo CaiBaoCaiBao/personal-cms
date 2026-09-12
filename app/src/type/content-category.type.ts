@@ -1,5 +1,5 @@
 import type { FieldInputTypes, FieldOutputTypes } from "@/prisma/contract";
-import { CONTENT_CATEGORY_ITEM_KEYS } from "@/constant/content-category.constant";
+import { ListContentCategoryQueryDTO } from "@/lib/schema/content-category.schema";
 type ContentCategoryFields = FieldInputTypes["public"]["ContentCategory"];
 export type ContentCategoryRow = FieldOutputTypes["public"]["ContentCategory"];
 
@@ -28,4 +28,20 @@ export type ContentCategoryItemVO = {
 
 export type ContentCategoryTreeNode = ContentCategoryItemVO & {
     children?: ContentCategoryTreeNode[];
+};
+
+export type ContentCategoryParentOption = {
+    id: string;
+    name: string;
+    slug: string;
+};
+
+export type PageOptions = {
+    params: ListContentCategoryQueryDTO;
+};
+
+export type FormOptions = {
+    id?: string;
+    parentCategories: ContentCategoryParentOption[];
+    initialData?: ContentCategoryItemVO;
 };

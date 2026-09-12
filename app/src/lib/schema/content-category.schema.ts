@@ -20,12 +20,24 @@ const contentCategorySlugSchema = z
     );
 
 export const saveContentCategorySchema = z.object({
-    name: z.string().trim().min(1),
+    name: z.string().trim().min(1, "名称不能为空"),
     slug: contentCategorySlugSchema,
-    description: z.string().optional(),
+    description: z
+        .string()
+        .optional()
+        .transform((value) => {
+            const trimmed = value?.trim();
+            return trimmed ? trimmed : undefined;
+        }),
     isActive: z.boolean().default(true),
-    parentId: z.string().optional(),
-    sortOrder: z.coerce.number().default(0),
+    parentId: z
+        .string()
+        .optional()
+        .transform((value) => {
+            const trimmed = value?.trim();
+            return trimmed ? trimmed : undefined;
+        }),
+    sortOrder: z.coerce.number().int().min(0).default(0),
 });
 
 export const listContentCategorySchema = z.object({
