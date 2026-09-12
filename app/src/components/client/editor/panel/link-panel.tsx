@@ -121,7 +121,6 @@ export function LinkPanel({ editor, open, onOpenChange }: Props) {
                     <FieldLabel htmlFor={`${formId}-text`}>Text (optional)</FieldLabel>
                     <Input
                         id={`${formId}-text`}
-                        autoFocus
                         value={text}
                         onChange={(e) => setText(e.target.value)}
                         placeholder="Enter text for the link"

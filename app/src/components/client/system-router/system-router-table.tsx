@@ -28,6 +28,7 @@ const COLUMN_CLASS: Record<string, { head?: string; cell?: string }> = {
     routeTypeLabel: { head: "w-24", cell: "w-24" },
     sortOrder: { head: "w-16 text-center", cell: "w-16 text-center" },
     defaultOpen: { head: "w-24", cell: "w-24" },
+    scope: { head: "w-24", cell: "w-24" },
     isActive: { head: "w-28", cell: "w-28" },
     updatedAt: { head: "w-40", cell: "w-40" },
     actions: {

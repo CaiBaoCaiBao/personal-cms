@@ -13,6 +13,7 @@ type Props = {
     searchParams: Promise<{
         keyword?: string;
         routeType?: string;
+        scope?: string;
         isActive?: string;
     }>;
 };

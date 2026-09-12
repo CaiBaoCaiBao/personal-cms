@@ -4,13 +4,21 @@ import {
     useEditor,
     Tiptap,
     JSONContent,
+    type Editor as TiptapEditor,
 } from "@tiptap/react";
 import { getExtensions } from "./extensions";
 import { cn } from "@/lib/utils";
 import "./editor.css";
-import {useEffect} from "react";
+import { useEffect } from "react";
 
 export const defaultContent = "<p></p>";
+
+function isSameContent(editor: TiptapEditor, content: string | JSONContent) {
+    if (typeof content === "string") {
+        return editor.getHTML() === content;
+    }
+    return JSON.stringify(editor.getJSON()) === JSON.stringify(content);
+}
 
 interface Props {
     content?: string | JSONContent;
@@ -24,6 +32,7 @@ interface Props {
 
 export function EditorRoot({
     content = defaultContent,
+    placeholder = "Write something...",
     className = "",
     children,
     onBlur,
@@ -31,7 +40,7 @@ export function EditorRoot({
     editable = true,
 }: Props) {
     const editor = useEditor({
-        extensions: getExtensions({placeholder:"Write something..."}),
+        extensions: getExtensions({ placeholder }),
         content,
         immediatelyRender: false,
         editorProps: {
@@ -51,8 +60,13 @@ export function EditorRoot({
 
     useEffect(() => {
         if (!editor) return;
+        editor.setEditable(editable);
+    }, [editor, editable]);
+
+    useEffect(() => {
+        if (!editor) return;
         const next = content ?? defaultContent;
-        if (editor.getHTML() === next) return;
+        if (isSameContent(editor, next)) return;
         editor.commands.setContent(next, { emitUpdate: false });
     }, [editor, content]);
 

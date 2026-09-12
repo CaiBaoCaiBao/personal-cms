@@ -1,11 +1,18 @@
 // use prisma-next
 
 enum RouteType {
+  set
   group
   page
   directory
   link
-  // button
+
+  @@type("pg/text@1")
+}
+
+enum RouteScope {
+  public
+  admin
 
   @@type("pg/text@1")
 }
@@ -23,13 +30,14 @@ enum ArticleStatus {
 model SystemRouter{
   id          String    @id @default(cuid(2))
   name        String
-  path        String?   // group 可空；page/directory 内部路径；link 为 URL
+  path        String?   // set/page/directory 内部路径；group 可空；link 为 URL
   icon        String?   @map("icon")          // Lucide 名，如 "LayoutDashboard"
   parentId    String?   @map("parent_id")
   routeType   RouteType @map("route_type")
   sortOrder   Int       @default(0) @map("sort_order")
   defaultOpen Boolean   @default(false) @map("default_open") // 主要给 directory
   isActive    Boolean   @default(true) @map("is_active")
+  scope       RouteScope @default(admin)
   createdAt   TimestamptzString @default(now()) @map("created_at")
   updatedAt   temporal.updatedAtString() @map("updated_at")
   deletedAt   TimestamptzString? @map("deleted_at")
@@ -40,6 +48,7 @@ model SystemRouter{
   @@unique([path]) // PG 允许多个 NULL，多个 group 无 path 没问题
   @@index([parentId, sortOrder])
   @@index([isActive, deletedAt])
+  @@index([scope, isActive, deletedAt])
   @@map("system_routers")
 }
 

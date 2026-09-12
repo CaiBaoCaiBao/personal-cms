@@ -32,8 +32,10 @@ export function SystemRouterPage({ params }: Props) {
                 },
                 isActive: state.isActive,
                 onIsActiveChange: actions.setIsActive,
+                scope: state.scope,
+                onScopeChange: actions.setScope,
             }),
-        [state.isActive],
+        [state.isActive, state.scope],
     );
     return (
         <div>

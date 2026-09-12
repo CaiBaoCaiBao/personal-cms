@@ -28,6 +28,7 @@ export class ContentCategoryDao {
             throw mapPrismaError(e);
         }
     }
+    /** @description 软删分类，并改写 slug 为 delete_${id} 以释放 @@unique([slug]) */
     static async remove(id: string) {
         try {
             await db.orm.public.ContentCategory.where({
@@ -35,7 +36,7 @@ export class ContentCategoryDao {
                 deletedAt: null,
             }).update({
                 deletedAt: new Date().toISOString(),
-                slug: `deleted-${id}`,
+                slug: `delete_${id}`,
             });
         } catch (e) {
             if (e instanceof AppError) throw e;

@@ -33,7 +33,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'7685ea0f633e4c8d3581819e149d729a13d91335df2e43f85caf2a61aafb8cbb'>;
+  StorageHashBase<'20c8c1ff91ed7893dc6f636c560dfdd5f441356e721de5dd8f6695cd673ed8a2'>;
 export type ExecutionHash =
   ExecutionHashBase<'ad6b6a95e4fc5da7dafb549cd13b0e0e2505f7c21939865192caa19c23a42611'>;
 export type ProfileHash =
@@ -296,7 +296,7 @@ export type FieldOutputTypes = {
       readonly path: CodecTypes['pg/text@1']['output'] | null;
       readonly icon: CodecTypes['pg/text@1']['output'] | null;
       readonly parentId: CodecTypes['pg/text@1']['output'] | null;
-      readonly routeType: 'set' | 'group' | 'page' | 'directory' | 'link';
+      readonly routeType: 'group' | 'page' | 'directory' | 'link';
       readonly sortOrder: CodecTypes['pg/int4@1']['output'];
       readonly defaultOpen: CodecTypes['pg/bool@1']['output'];
       readonly isActive: CodecTypes['pg/bool@1']['output'];
@@ -364,7 +364,7 @@ export type FieldInputTypes = {
       readonly path: CodecTypes['pg/text@1']['input'] | null;
       readonly icon: CodecTypes['pg/text@1']['input'] | null;
       readonly parentId: CodecTypes['pg/text@1']['input'] | null;
-      readonly routeType: 'set' | 'group' | 'page' | 'directory' | 'link';
+      readonly routeType: 'group' | 'page' | 'directory' | 'link';
       readonly sortOrder: CodecTypes['pg/int4@1']['input'];
       readonly defaultOpen: CodecTypes['pg/bool@1']['input'];
       readonly isActive: CodecTypes['pg/bool@1']['input'];
@@ -436,7 +436,7 @@ export type StorageColumnTypes = {
       readonly name: CodecTypes['pg/text@1']['output'];
       readonly parent_id: CodecTypes['pg/text@1']['output'] | null;
       readonly path: CodecTypes['pg/text@1']['output'] | null;
-      readonly route_type: 'set' | 'group' | 'page' | 'directory' | 'link';
+      readonly route_type: 'group' | 'page' | 'directory' | 'link';
       readonly scope: 'public' | 'admin';
       readonly sort_order: CodecTypes['pg/int4@1']['output'];
       readonly updated_at: CodecTypes['pg/timestamptz-string@1']['output'];
@@ -504,7 +504,7 @@ export type StorageColumnInputTypes = {
       readonly name: CodecTypes['pg/text@1']['input'];
       readonly parent_id: CodecTypes['pg/text@1']['input'] | null;
       readonly path: CodecTypes['pg/text@1']['input'] | null;
-      readonly route_type: 'set' | 'group' | 'page' | 'directory' | 'link';
+      readonly route_type: 'group' | 'page' | 'directory' | 'link';
       readonly scope: 'public' | 'admin';
       readonly sort_order: CodecTypes['pg/int4@1']['input'];
       readonly updated_at: CodecTypes['pg/timestamptz-string@1']['input'];
@@ -1099,7 +1099,7 @@ type ContractBase = Omit<
             };
             readonly RouteType: {
               readonly kind: 'valueSet';
-              readonly values: readonly ['set', 'group', 'page', 'directory', 'link'];
+              readonly values: readonly ['group', 'page', 'directory', 'link'];
             };
           };
         };
@@ -1688,7 +1688,6 @@ type ContractBase = Omit<
           readonly RouteType: {
             readonly codecId: 'pg/text@1';
             readonly members: readonly [
-              { readonly name: 'set'; readonly value: 'set' },
               { readonly name: 'group'; readonly value: 'group' },
               { readonly name: 'page'; readonly value: 'page' },
               { readonly name: 'directory'; readonly value: 'directory' },

@@ -54,9 +54,26 @@
               }
             ]
           },
+          "RouteScope": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "public",
+                "value": "public"
+              },
+              {
+                "name": "admin",
+                "value": "admin"
+              }
+            ]
+          },
           "RouteType": {
             "codecId": "pg/text@1",
             "members": [
+              {
+                "name": "set",
+                "value": "set"
+              },
               {
                 "name": "group",
                 "value": "group"
@@ -817,6 +834,19 @@
                   "plane": "domain"
                 }
               },
+              "scope": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "RouteScope",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
               "sortOrder": {
                 "nullable": false,
                 "type": {
@@ -895,6 +925,9 @@
                 },
                 "routeType": {
                   "column": "route_type"
+                },
+                "scope": {
+                  "column": "scope"
                 },
                 "sortOrder": {
                   "column": "sort_order"
@@ -1465,9 +1498,14 @@
             "system_routers": {
               "checks": [
                 {
-                  "expression": "\"route_type\" IN ('group', 'page', 'directory', 'link')",
-                  "name": "system_routers_route_type_check_daa75011",
+                  "expression": "\"route_type\" IN ('set', 'group', 'page', 'directory', 'link')",
+                  "name": "system_routers_route_type_check_98f53ccf",
                   "prefix": "system_routers_route_type_check"
+                },
+                {
+                  "expression": "\"scope\" IN ('public', 'admin')",
+                  "name": "system_routers_scope_check_5f9ccfae",
+                  "prefix": "system_routers_scope_check"
                 }
               ],
               "columns": {
@@ -1539,6 +1577,21 @@
                     "plane": "storage"
                   }
                 },
+                "scope": {
+                  "codecId": "pg/text@1",
+                  "default": {
+                    "kind": "literal",
+                    "value": "admin"
+                  },
+                  "nativeType": "text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "RouteScope",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
                 "sort_order": {
                   "codecId": "pg/int4@1",
                   "default": {
@@ -1598,6 +1651,16 @@
                   "name": "system_routers_parent_id_sort_order_idx_e2696ee4",
                   "prefix": "system_routers_parent_id_sort_order_idx",
                   "unique": false
+                },
+                {
+                  "columns": [
+                    "scope",
+                    "is_active",
+                    "deleted_at"
+                  ],
+                  "name": "system_routers_scope_is_active_deleted_at_idx_2f236761",
+                  "prefix": "system_routers_scope_is_active_deleted_at_idx",
+                  "unique": false
                 }
               ],
               "primaryKey": {
@@ -1624,9 +1687,17 @@
                 "scheduled"
               ]
             },
+            "RouteScope": {
+              "kind": "valueSet",
+              "values": [
+                "public",
+                "admin"
+              ]
+            },
             "RouteType": {
               "kind": "valueSet",
               "values": [
+                "set",
                 "group",
                 "page",
                 "directory",
@@ -1639,7 +1710,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "9ce39936de2f56b744529ba25e8b3986b4bc15e38d3485fb924d847475ae1c6a"
+    "storageHash": "7685ea0f633e4c8d3581819e149d729a13d91335df2e43f85caf2a61aafb8cbb"
   },
   "execution": {
     "executionHash": "ad6b6a95e4fc5da7dafb549cd13b0e0e2505f7c21939865192caa19c23a42611",

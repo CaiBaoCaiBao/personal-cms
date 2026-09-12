@@ -37,11 +37,11 @@ export class SystemRouterDao {
     }
 
     /**
-     * @description 侧栏：查询全部启用中的路由（扁平行）
+     * @description 侧栏：启用中的后台节点 + 全部启用中的场景根（set 不受 scope 约束）
      */
     static async findAllForNav(): Promise<SystemRouterNavRow[]> {
         try {
-            return await db.orm.public.SystemRouter.where({
+            const rows = await db.orm.public.SystemRouter.where({
                 deletedAt: null,
                 isActive: true,
             })
@@ -54,9 +54,13 @@ export class SystemRouterDao {
                     "routeType",
                     "sortOrder",
                     "defaultOpen",
+                    "scope",
                 )
                 .orderBy((r) => r.sortOrder.asc())
                 .all();
+            return rows
+                .filter((row) => row.routeType === "set" || row.scope === "admin")
+                .map(({ scope: _scope, ...row }) => row);
         } catch (e) {
             if (e instanceof AppError) throw e;
             throw mapPrismaError(e);
@@ -80,14 +84,14 @@ export class SystemRouterDao {
     }
 
     /**
-     * @description 父级候选：group / directory
+     * @description 父级候选：set / group / directory
      */
     static async findParentCandidates() {
         try {
             return await db.orm.public.SystemRouter.where({
                 deletedAt: null,
             })
-                .where((r) => r.routeType.in(["group", "directory"]))
+                .where((r) => r.routeType.in(["set", "group", "directory"]))
                 .select("id", "name", "path", "routeType", "parentId", "sortOrder")
                 .orderBy((r) => r.sortOrder.asc())
                 .all();
@@ -98,16 +102,27 @@ export class SystemRouterDao {
     }
 
     /**
-     * @description 删除系统路由（软删）
+     * @description 软删系统路由；有 path 时改写为 delete_${id} 以释放 @@unique([path])
      */
     static async remove(id: string) {
         try {
+            const row = await db.orm.public.SystemRouter.where({
+                id,
+                deletedAt: null,
+            })
+                .select("id", "path")
+                .first();
+            if (!row) return;
+
+            const deletedAt = new Date().toISOString();
             await db.orm.public.SystemRouter.where({
                 id,
                 deletedAt: null,
-            }).update({
-                deletedAt: new Date().toISOString(),
-            });
+            }).update(
+                row.path
+                    ? { deletedAt, path: `delete_${id}` }
+                    : { deletedAt },
+            );
         } catch (e) {
             if (e instanceof AppError) throw e;
             throw mapPrismaError(e);
@@ -177,9 +192,7 @@ export class SystemRouterDao {
     static async removeMany(ids: string[]) {
         if (ids.length === 0) return;
         try {
-            await db.orm.public.SystemRouter.where((r) => r.id.in(ids))
-                .where({ deletedAt: null })
-                .update({ deletedAt: new Date().toISOString() });
+            await Promise.all(ids.map((id) => this.remove(id)));
         } catch (e) {
             if (e instanceof AppError) throw e;
             throw mapPrismaError(e);

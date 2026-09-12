@@ -2,6 +2,7 @@ import type { FieldInputTypes, FieldOutputTypes } from "@/prisma/contract";
 import type { ListSystemRouterQueryDTO } from "@/lib/schema/system-router.schema";
 
 export type RouteType = FieldInputTypes["public"]["SystemRouter"]["routeType"];
+export type RouteScope = FieldInputTypes["public"]["SystemRouter"]["scope"];
 
 type SystemRouterFields = FieldInputTypes["public"]["SystemRouter"];
 export type SystemRouterRow = FieldOutputTypes["public"]["SystemRouter"];
@@ -17,6 +18,7 @@ export type InputSystemRouter = Pick<
     | "sortOrder"
     | "defaultOpen"
     | "isActive"
+    | "scope"
 >;
 
 /** 侧栏组装用的扁平行 */
@@ -54,7 +56,7 @@ export type SystemRouterParentOption = {
     id: string;
     name: string;
     path: string | null;
-    routeType: Extract<RouteType, "group" | "directory">;
+    routeType: Extract<RouteType, "set" | "group" | "directory">;
 };
 
 /** 列表行VO */
@@ -72,6 +74,7 @@ export type SystemRouterListVO = {
     sortOrder: number;
     defaultOpen: boolean;
     isActive: boolean;
+    scope: RouteScope;
     createdAt: string;
     updatedAt: string;
 };

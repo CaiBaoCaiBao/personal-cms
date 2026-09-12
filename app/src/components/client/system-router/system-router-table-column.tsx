@@ -28,13 +28,15 @@ import {
 import { resolveNavIcon } from "@/components/server/nav-icon";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { SystemRouterActions } from "@/components/client/system-router/system-router-actions";
-import type { RouteType } from "@/type/system-router.type";
+import type { RouteScope, RouteType } from "@/type/system-router.type";
+import { ROUTE_SCOPE_LABEL_MAP } from "@/constant/system-router.constant";
 import { cn } from "cn";
 
 const checkboxClass =
     "size-4 rounded-[4px] border border-input accent-primary";
 
 const TYPE_BADGE_CLASS: Record<RouteType, string> = {
+    set: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
     group: "bg-muted text-muted-foreground",
     directory: "bg-sky-500/10 text-sky-700 dark:text-sky-300",
     page: "bg-violet-500/10 text-violet-700 dark:text-violet-300",
@@ -57,6 +59,8 @@ interface Props {
     onDelete?: (row: SystemRouterTreeNode) => void;
     isActive?: boolean;
     onIsActiveChange?: (isActive: boolean | undefined) => void;
+    scope?: RouteScope;
+    onScopeChange?: (scope: RouteScope | undefined) => void;
 }
 
 function StatusColumnHeader({
@@ -107,6 +111,53 @@ function StatusColumnHeader({
     );
 }
 
+function ScopeColumnHeader({
+    value,
+    onChange,
+}: {
+    value?: RouteScope;
+    onChange?: (scope: RouteScope | undefined) => void;
+}) {
+    const selected = value ?? "all";
+    const filtered = value !== undefined;
+    return (
+        <DropdownMenu>
+            <DropdownMenuTrigger
+                render={
+                    <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        className="-ml-1.5 h-7 gap-1 px-1.5 font-medium"
+                    />
+                }
+            >
+                作用域
+                <ChevronDown className="size-3.5 text-muted-foreground" />
+                {filtered ? (
+                    <span
+                        aria-hidden
+                        className="size-1.5 rounded-full bg-primary"
+                    />
+                ) : null}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+                <DropdownMenuRadioGroup
+                    value={selected}
+                    onValueChange={(next) => {
+                        if (next === "admin" || next === "public") onChange?.(next);
+                        else onChange?.(undefined);
+                    }}
+                >
+                    <DropdownMenuRadioItem value="all">全部</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="admin">后台</DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="public">公开</DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+        </DropdownMenu>
+    );
+}
+
 function formatDateTime(value: string) {
     const date = new Date(value);
     if (Number.isNaN(date.getTime())) return value;
@@ -117,6 +168,8 @@ export function SystemRouterTableColumn({
     onDelete,
     isActive,
     onIsActiveChange,
+    scope,
+    onScopeChange,
 }: Props) {
     return columnsHelper.columns([
         columnsHelper.display({
@@ -232,6 +285,35 @@ export function SystemRouterTableColumn({
                     {getValue() ? "是" : "否"}
                 </span>
             ),
+        }),
+        columnsHelper.accessor("scope", {
+            header: () => (
+                <ScopeColumnHeader
+                    value={scope}
+                    onChange={onScopeChange}
+                />
+            ),
+            cell: ({ row, getValue }) => {
+                if (row.original.routeType === "set") {
+                    return (
+                        <span className="text-xs text-muted-foreground">—</span>
+                    );
+                }
+                const value = getValue();
+                return (
+                    <Badge
+                        variant="secondary"
+                        className={cn(
+                            "border-transparent font-normal",
+                            value === "admin"
+                                ? "bg-violet-500/10 text-violet-700 dark:text-violet-300"
+                                : "bg-sky-500/10 text-sky-700 dark:text-sky-300",
+                        )}
+                    >
+                        {ROUTE_SCOPE_LABEL_MAP[value]}
+                    </Badge>
+                );
+            },
         }),
         columnsHelper.accessor("isActive", {
             header: () => (

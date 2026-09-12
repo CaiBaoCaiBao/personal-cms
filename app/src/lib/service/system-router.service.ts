@@ -18,6 +18,10 @@ import { AppError } from "@/lib/utils/errors/app-error";
 import { ROUTE_TYPE_LABEL_MAP } from "@/constant/system-router.constant";
 import type { SystemRouterRow } from "@/type/system-router.type";
 
+type ParentRow = NonNullable<
+    Awaited<ReturnType<typeof SystemRouterDao.findRouterById>>
+>;
+
 export class SystemRouterService {
     /**
      * @description 创建系统路由
@@ -25,16 +29,27 @@ export class SystemRouterService {
     static async createSystemRouter(data: CreateSystemRouterDTO) {
         try {
             if (data.routeType === "group") {
+                await this.assertGroupParent(data.parentId);
+                await SystemRouterDao.create(this.toInput(data));
+                return;
+            }
+
+            if (data.routeType === "set") {
                 if (data.parentId) {
-                    throw new AppError("VALIDATION_ERROR", "分组不能有父级", 400);
+                    throw new AppError("VALIDATION_ERROR", "场景根不能有父级", 400);
+                }
+                if (!this.validatePath("set", data.path, null)) {
+                    throw new AppError("VALIDATION_ERROR", "路由路径不合法", 400);
+                }
+                const existed = await SystemRouterDao.findRouterByPath(data.path);
+                if (existed) {
+                    throw new AppError("CONFLICT", "路由路径已存在", 409);
                 }
                 await SystemRouterDao.create(this.toInput(data));
                 return;
             }
 
-            let parent: Awaited<
-                ReturnType<typeof SystemRouterDao.findRouterById>
-            > = null;
+            let parent: ParentRow | null = null;
             if (data.parentId) {
                 parent = await SystemRouterDao.findRouterById(data.parentId);
                 if (!parent) {
@@ -43,7 +58,8 @@ export class SystemRouterService {
                 this.assertParentAllowed(data.routeType, parent.routeType);
             }
 
-            if (!this.validatePath(data.routeType, data.path, parent?.path ?? null)) {
+            const parentPath = await this.resolveEffectivePath(parent);
+            if (!this.validatePath(data.routeType, data.path, parentPath)) {
                 throw new AppError("VALIDATION_ERROR", "路由路径不合法", 400);
             }
 
@@ -69,16 +85,27 @@ export class SystemRouterService {
             }
 
             if (data.routeType === "group") {
+                await this.assertGroupParent(data.parentId, id);
+                await SystemRouterDao.update(id, this.toInput(data));
+                return;
+            }
+
+            if (data.routeType === "set") {
                 if (data.parentId) {
-                    throw new AppError("VALIDATION_ERROR", "分组不能有父级", 400);
+                    throw new AppError("VALIDATION_ERROR", "场景根不能有父级", 400);
+                }
+                if (!this.validatePath("set", data.path, null)) {
+                    throw new AppError("VALIDATION_ERROR", "路由路径不合法", 400);
+                }
+                const existed = await SystemRouterDao.findRouterByPath(data.path);
+                if (existed && existed.id !== id) {
+                    throw new AppError("CONFLICT", "路由路径已存在", 409);
                 }
                 await SystemRouterDao.update(id, this.toInput(data));
                 return;
             }
 
-            let parent: Awaited<
-                ReturnType<typeof SystemRouterDao.findRouterById>
-            > = null;
+            let parent: ParentRow | null = null;
             if (data.parentId) {
                 if (data.parentId === id) {
                     throw new AppError("VALIDATION_ERROR", "不能将自身设为父级", 400);
@@ -94,7 +121,8 @@ export class SystemRouterService {
                 }
             }
 
-            if (!this.validatePath(data.routeType, data.path, parent?.path ?? null)) {
+            const parentPath = await this.resolveEffectivePath(parent);
+            if (!this.validatePath(data.routeType, data.path, parentPath)) {
                 throw new AppError("VALIDATION_ERROR", "路由路径不合法", 400);
             }
 
@@ -151,7 +179,10 @@ export class SystemRouterService {
                 id: row.id,
                 name: row.name,
                 path: row.path,
-                routeType: row.routeType as Extract<RouteType, "group" | "directory">,
+                routeType: row.routeType as Extract<
+                    RouteType,
+                    "set" | "group" | "directory"
+                >,
             }));
         } catch (e) {
             if (e instanceof AppError) throw e;
@@ -180,7 +211,7 @@ export class SystemRouterService {
         try {
             const row = await SystemRouterDao.findRouterById(id);
             if (!row) throw new AppError("NOT_FOUND", "系统路由不存在", 404);
-            const rows = await SystemRouterDao.findAllForList(); // 已有扁平行
+            const rows = await SystemRouterDao.findAllForList();
             const ids = this.collectSelfAndDescendants(id, rows);
             await SystemRouterDao.removeMany(ids);
         } catch (e) {
@@ -188,9 +219,27 @@ export class SystemRouterService {
             throw new AppError("INTERNAL_ERROR", "删除系统路由失败", 500);
         }
     }
+
     /**
-     * @description 构建侧栏菜单树
+     * @description 侧栏隐藏场景根(set)，其子节点上提
      */
+    private static flattenHiddenSets(
+        rows: SystemRouterNavRow[],
+        byParent: Map<string | null, SystemRouterNavRow[]>,
+    ): SystemRouterNavRow[] {
+        const result: SystemRouterNavRow[] = [];
+        for (const row of rows) {
+            if (row.routeType === "set") {
+                result.push(
+                    ...this.flattenHiddenSets(byParent.get(row.id) ?? [], byParent),
+                );
+            } else {
+                result.push(row);
+            }
+        }
+        return result;
+    }
+
     private static buildSidebarNav(rows: SystemRouterNavRow[]): AdminNavGroup[] {
         const byParent = new Map<string | null, SystemRouterNavRow[]>();
         for (const row of rows) {
@@ -207,8 +256,11 @@ export class SystemRouterService {
             );
         }
 
+        const visibleOf = (parentId: string | null) =>
+            this.flattenHiddenSets(byParent.get(parentId) ?? [], byParent);
+
         const toItem = (row: SystemRouterNavRow): AdminNavItem => {
-            const children = (byParent.get(row.id) ?? []).map(toItem);
+            const children = visibleOf(row.id).map(toItem);
             return {
                 id: row.id,
                 title: row.name,
@@ -220,7 +272,7 @@ export class SystemRouterService {
             };
         };
 
-        const roots = byParent.get(null) ?? [];
+        const roots = visibleOf(null);
         const result: AdminNavGroup[] = [];
         let untitledItems: AdminNavItem[] = [];
 
@@ -235,7 +287,7 @@ export class SystemRouterService {
                 flushUntitled();
                 result.push({
                     title: root.name,
-                    items: (byParent.get(root.id) ?? []).map(toItem),
+                    items: visibleOf(root.id).map(toItem),
                 });
             } else {
                 untitledItems.push(toItem(root));
@@ -286,6 +338,7 @@ export class SystemRouterService {
         const hasFilter =
             Boolean(query.keyword) ||
             query.routeType !== undefined ||
+            query.scope !== undefined ||
             query.isActive !== undefined;
         if (!hasFilter) return nodes;
 
@@ -298,6 +351,20 @@ export class SystemRouterService {
             }
             if (query.routeType !== undefined && node.routeType !== query.routeType) {
                 return false;
+            }
+            if (
+                query.scope !== undefined &&
+                node.routeType !== "set" &&
+                node.scope !== query.scope
+            ) {
+                return false;
+            }
+            if (query.scope !== undefined && node.routeType === "set") {
+                const hasOwnFilter =
+                    Boolean(keyword) ||
+                    query.routeType !== undefined ||
+                    query.isActive !== undefined;
+                if (!hasOwnFilter) return false;
             }
             if (query.isActive !== undefined && node.isActive !== query.isActive) {
                 return false;
@@ -340,17 +407,61 @@ export class SystemRouterService {
         }
         return false;
     }
+
+    private static async assertGroupParent(
+        parentId: string | undefined,
+        selfId?: string,
+    ) {
+        if (!parentId) return;
+        if (selfId && parentId === selfId) {
+            throw new AppError("VALIDATION_ERROR", "不能将自身设为父级", 400);
+        }
+        const parent = await SystemRouterDao.findRouterById(parentId);
+        if (!parent) {
+            throw new AppError("NOT_FOUND", "父级路由不存在", 404);
+        }
+        if (parent.routeType !== "set") {
+            throw new AppError("VALIDATION_ERROR", "分组只能挂在场景根下", 400);
+        }
+        if (selfId) {
+            const rows = await SystemRouterDao.findAllForList();
+            if (this.isSelfOrDescendant(parentId, selfId, rows)) {
+                throw new AppError("VALIDATION_ERROR", "不能将自身或子孙设为父级", 400);
+            }
+        }
+    }
+
     /**
-     * @description 断言父级是否允许
+     * @description 断言父级是否允许（page/directory/link）
      */
     private static assertParentAllowed(child: RouteType, parent: RouteType) {
         if (parent === "link" || parent === "page") {
             throw new AppError("VALIDATION_ERROR", "页面/外链不能作为父级", 400);
         }
-        if (child === "group") {
-            throw new AppError("VALIDATION_ERROR", "分组必须是根节点", 400);
+        if (child === "set") {
+            throw new AppError("VALIDATION_ERROR", "场景根不能有父级", 400);
+        }
+        if (child === "group" && parent !== "set") {
+            throw new AppError("VALIDATION_ERROR", "分组只能挂在场景根下", 400);
         }
     }
+
+    /**
+     * @description 解析父级有效路径（group 无 path，向上找到 set/directory）
+     */
+    private static async resolveEffectivePath(
+        parent: ParentRow | null,
+    ): Promise<string | null> {
+        if (!parent) return null;
+        let current: ParentRow | null = parent;
+        while (current) {
+            if (current.path) return current.path;
+            if (!current.parentId) return null;
+            current = await SystemRouterDao.findRouterById(current.parentId);
+        }
+        return null;
+    }
+
     /**
      * @description 验证路径是否合法
      */
@@ -375,20 +486,34 @@ export class SystemRouterService {
         }
 
         if (/\s|\\|[#?]/.test(path)) return false;
-        if (!path.startsWith("/") || path === "/") return false;
-        if (path.endsWith("/")) return false;
+        if (!path.startsWith("/")) return false;
+        if (path.endsWith("/") && path !== "/") return false;
+
+        if (routeType === "set") {
+            if (parentPath) return false;
+            if (path === "/") return true;
+            const segments = path.slice(1).split("/");
+            return (
+                segments.length === 1 &&
+                Boolean(segments[0]) &&
+                /^[a-zA-Z0-9_-]+$/.test(segments[0]!)
+            );
+        }
+
+        if (path === "/") return false;
 
         const segments = path.slice(1).split("/");
         if (segments.some((s) => !s || s === "." || s === "..")) return false;
         if (!segments.every((s) => /^[a-zA-Z0-9_-]+$/.test(s))) return false;
 
         if (parentPath) {
-            if (!parentPath.startsWith("/") || parentPath === "/") return false;
-            if (parentPath.endsWith("/")) return false;
+            if (parentPath === "/") {
+                return segments.length === 1;
+            }
+            if (!parentPath.startsWith("/") || parentPath.endsWith("/")) return false;
             const prefix = `${parentPath}/`;
             if (!path.startsWith(prefix)) return false;
             const rest = path.slice(prefix.length);
-            // 只能比父级多恰好一段
             return rest.length > 0 && !rest.includes("/");
         }
         return segments.length === 1;
@@ -406,6 +531,7 @@ export class SystemRouterService {
             sortOrder: data.sortOrder,
             defaultOpen: data.defaultOpen,
             isActive: data.isActive,
+            scope: data.routeType === "set" ? "admin" : data.scope,
         };
     }
     /**
@@ -427,6 +553,7 @@ export class SystemRouterService {
             sortOrder: row.sortOrder,
             defaultOpen: row.defaultOpen,
             isActive: row.isActive,
+            scope: row.scope,
             createdAt: row.createdAt,
             updatedAt: row.updatedAt,
         };

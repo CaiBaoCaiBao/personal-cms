@@ -12,6 +12,7 @@ import {
     AppError,
     cn,
 } from "@/lib/utils";
+import type { ApiResult } from "@/type/api-result.type";
 import { QINIU_UPLOAD_URL } from "@/constant/qiniu.constant";
 import {
     UploadCloud,
@@ -29,6 +30,22 @@ import { NodeSelection } from "@tiptap/pm/state";
 
 export type Align = "left" | "center" | "right";
 
+type UploadToken = {
+    token: string;
+    key: string;
+    url: string;
+};
+
+function assertApiOk<T>(res: unknown): T {
+    if (res instanceof AppError) throw res;
+    const result = res as ApiResult<T>;
+    if (result && result.ok === true) return result.data;
+    if (result && result.ok === false) {
+        throw new AppError(result.error.code, result.error.message);
+    }
+    throw new AppError("INTERNAL_ERROR", "网络请求失败");
+}
+
 export function ImageNodeView({
     node,
     updateAttributes,
@@ -39,7 +56,7 @@ export function ImageNodeView({
 }: NodeViewProps) {
     const imgRef = useRef<HTMLImageElement>(null);
     const figureRef = useRef<HTMLElement>(null);
-    const [captionOpen, setCaptionOpen] = useState(false && editor.isEditable);
+    const [captionOpen, setCaptionOpen] = useState(false);
     const options: FileUploadOptions = {
         autoUpload: true,
         accept: "image/*",
@@ -47,11 +64,7 @@ export function ImageNodeView({
             const res = await HTTP.POST("/api/admin/v1/file", {
                 params: { filename: file.name }
             });
-            const { token, key, url } = res.data as {
-                token: string;
-                key: string;
-                url: string;
-            };
+            const { token, key, url } = assertApiOk<UploadToken>(res);
             const form = new FormData();
             form.append("token", token);
             form.append("key", key);
@@ -64,11 +77,11 @@ export function ImageNodeView({
             return url;
         },
         onDelete: async (url) => {
-            await HTTP.DELETE("/api/admin/v1/file", {
-                params: {
-                    url,
-                }
-            })
+            if (!url || url.startsWith("blob:")) return;
+            const res = await HTTP.DELETE("/api/admin/v1/file", {
+                params: { url },
+            });
+            assertApiOk<void>(res);
         },
         onUploaded: (file) => {
             if (!file.url || file.url.startsWith("blob:")) return;
@@ -178,9 +191,13 @@ export function ImageNodeView({
                             captionOpen={captionOpen}
                             setAlign={(align) => updateAttributes({ align })}
                             deleteNode={() => {
+                                const src = node.attrs.src as string | undefined;
                                 deleteNode();
-                                actions.removeFile(node.attrs.src);
-                                updateAttributes({ src: undefined });
+                                if (src && !src.startsWith("blob:")) {
+                                    void HTTP.DELETE("/api/admin/v1/file", {
+                                        params: { url: src },
+                                    });
+                                }
                             }}
                             onCaptionOpen={() => setCaptionOpen(true)}
                         />

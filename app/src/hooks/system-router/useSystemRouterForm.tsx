@@ -27,15 +27,25 @@ function toFormValues(row?: SystemRouterListVO): CreateSystemRouterFormValues {
         icon: row.icon ?? undefined,
         sortOrder: row.sortOrder,
         isActive: row.isActive,
+        scope: row.scope,
     };
 
     switch (row.routeType) {
+        case "set":
+            return {
+                ...base,
+                scope: "admin",
+                routeType: "set",
+                path: row.path ?? "/admin",
+                parentId: undefined,
+                defaultOpen: false,
+            };
         case "group":
             return {
                 ...base,
                 routeType: "group",
                 path: null,
-                parentId: undefined,
+                parentId: row.parentId ?? undefined,
                 defaultOpen: false,
             };
         case "page":
@@ -84,6 +94,7 @@ export function applyRouteTypeValues(
         icon: current.icon,
         sortOrder: current.sortOrder ?? 0,
         isActive: current.isActive ?? true,
+        scope: current.scope ?? "admin",
     };
 
     if (next === "group") {
@@ -91,6 +102,23 @@ export function applyRouteTypeValues(
             ...base,
             routeType: "group",
             path: null,
+            parentId: current.parentId,
+            defaultOpen: false,
+        };
+    }
+
+    if (next === "set") {
+        const currentPath = current.path;
+        const setPath =
+            typeof currentPath === "string" &&
+            (currentPath === "/" || /^\/[a-zA-Z0-9_-]+$/.test(currentPath))
+                ? currentPath
+                : "/admin";
+        return {
+            ...base,
+            scope: "admin",
+            routeType: "set",
+            path: setPath,
             parentId: undefined,
             defaultOpen: false,
         };
@@ -111,7 +139,9 @@ export function applyRouteTypeValues(
     }
 
     const internalPath =
-        typeof currentPath === "string" && currentPath.startsWith("/")
+        typeof currentPath === "string" &&
+        currentPath.startsWith("/") &&
+        currentPath !== "/"
             ? currentPath
             : "/admin";
 

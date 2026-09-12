@@ -1,6 +1,5 @@
 import {
     BoldIcon,
-    LucideIcon,
     Undo2,
     Link,
     ImagePlus,
@@ -12,6 +11,8 @@ import {
     Redo2,
     Heading,
     Heading1,
+    Heading2,
+    Heading3,
 } from "lucide-react";
 import type { Editor } from "@tiptap/react";
 import { LinkPanel } from "../panel/link-panel";
@@ -107,7 +108,23 @@ export const menuBarConfig: MenuBarConfig[] = [
                         action: (editor: Editor) => editor.chain().focus().toggleHeading({ level: 1 }).run(),
                         disabled: (editor: Editor) => !editor.can().chain().focus().toggleHeading({ level: 1 }).run(),
                         isActive: (editor: Editor) => editor.isActive("heading", { level: 1 }),
-                    }
+                    },
+                    {
+                        id: "heading-2",
+                        label: "Heading 2",
+                        icon: Heading2,
+                        action: (editor: Editor) => editor.chain().focus().toggleHeading({ level: 2 }).run(),
+                        disabled: (editor: Editor) => !editor.can().chain().focus().toggleHeading({ level: 2 }).run(),
+                        isActive: (editor: Editor) => editor.isActive("heading", { level: 2 }),
+                    },
+                    {
+                        id: "heading-3",
+                        label: "Heading 3",
+                        icon: Heading3,
+                        action: (editor: Editor) => editor.chain().focus().toggleHeading({ level: 3 }).run(),
+                        disabled: (editor: Editor) => !editor.can().chain().focus().toggleHeading({ level: 3 }).run(),
+                        isActive: (editor: Editor) => editor.isActive("heading", { level: 3 }),
+                    },
                 ]
             },
             

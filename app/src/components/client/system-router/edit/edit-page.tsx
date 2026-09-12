@@ -35,7 +35,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ROUTE_TYPE_LABEL } from "@/constant/system-router.constant";
+import {
+    ROUTE_SCOPE_LABEL,
+    ROUTE_TYPE_LABEL,
+} from "@/constant/system-router.constant";
+import type { RouteScope } from "@/type/system-router.type";
 import { resolveNavIcon } from "@/components/server/nav-icon";
 import Link from "next/link";
 import { Spinner } from "@/components/ui/spinner";
@@ -49,7 +53,8 @@ interface Props {
 const PARENT_NONE = "";
 
 const ROUTE_TYPE_HINT: Record<RouteType, string> = {
-    group: "分组作为侧栏分区，无路径、不可挂父级。",
+    set: "场景根：路径为 / 或单段如 /admin；侧栏不显示自身，子节点上提。不受作用域约束。",
+    group: "分组作为侧栏分区，无路径；可挂在场景根下。",
     directory: "目录可折叠，需内部路径，可设置默认展开。",
     page: "内部页面，路径须为 /a/b 形式。",
     link: "外部链接，仅支持 http/https。",
@@ -114,13 +119,6 @@ export function EditPage({
     };
     const formId = `system-router-edit-${useId()}`;
     const form = useSystemRouterForm(options);
-    const parentItems = [
-        { value: PARENT_NONE, label: "无（根级）" },
-        ...parentRouters.map((item) => ({
-            value: item.id,
-            label: item.path ? `${item.name}（${item.path}）` : item.name,
-        })),
-    ];
 
     if (id && isPending) {
         return (
@@ -298,8 +296,37 @@ export function EditPage({
                     </FieldSet>
 
                     <form.Subscribe selector={(state) => state.values.routeType}>
-                        {(routeType) =>
-                            routeType !== "group" ? (
+                        {(routeType) => {
+                            const filteredParents =
+                                routeType === "group"
+                                    ? parentRouters.filter((p) => p.routeType === "set")
+                                    : parentRouters.filter(
+                                          (p) =>
+                                              p.routeType === "set" ||
+                                              p.routeType === "group" ||
+                                              p.routeType === "directory",
+                                      );
+                            const parentItems = [
+                                {
+                                    value: PARENT_NONE,
+                                    label:
+                                        routeType === "group"
+                                            ? "无（顶部分区）"
+                                            : "无（根级）",
+                                },
+                                ...filteredParents.map((item) => ({
+                                    value: item.id,
+                                    label: item.path
+                                        ? `${item.name}（${item.path}）`
+                                        : item.name,
+                                })),
+                            ];
+                            const showPath = routeType !== "group";
+                            const showParent = routeType !== "set";
+
+                            if (!showPath && !showParent) return null;
+
+                            return (
                                 <>
                                     <FieldSeparator />
                                     <FieldSet>
@@ -308,109 +335,136 @@ export function EditPage({
                                             {ROUTE_TYPE_HINT[routeType]}
                                         </FieldDescription>
                                         <FieldGroup>
-                                            <form.Field
-                                                name="path"
-                                                children={(field) => {
-                                                    const isInvalid =
-                                                        !field.state.meta.isValid &&
-                                                        field.state.meta.isTouched;
-                                                    const isLink = routeType === "link";
-                                                    return (
-                                                        <Field data-invalid={isInvalid}>
-                                                            <FieldLabel htmlFor={field.name}>
-                                                                路径
-                                                                <RequiredMark />
-                                                            </FieldLabel>
-                                                            <FieldContent>
-                                                                <Input
-                                                                    id={field.name}
-                                                                    name={field.name}
-                                                                    value={field.state.value ?? ""}
-                                                                    onBlur={field.handleBlur}
-                                                                    onChange={(e) =>
-                                                                        field.handleChange(e.target.value)
-                                                                    }
-                                                                    aria-invalid={isInvalid}
-                                                                    placeholder={
-                                                                        isLink
-                                                                            ? "https://example.com"
-                                                                            : "/admin/example"
-                                                                    }
-                                                                    autoComplete="off"
-                                                                    className="font-mono"
-                                                                />
-                                                            </FieldContent>
-                                                            {isInvalid ? (
-                                                                <FieldError errors={field.state.meta.errors} />
-                                                            ) : (
-                                                                <FieldDescription>
-                                                                    {isLink
-                                                                        ? "仅支持 http/https 外链"
-                                                                        : "内部路径须为 /a/b 形式"}
-                                                                </FieldDescription>
-                                                            )}
-                                                        </Field>
-                                                    );
-                                                }}
-                                            />
-
-                                            <form.Field
-                                                name="parentId"
-                                                children={(field) => {
-                                                    const isInvalid =
-                                                        !field.state.meta.isValid &&
-                                                        field.state.meta.isTouched;
-                                                    return (
-                                                        <Field data-invalid={isInvalid}>
-                                                            <FieldLabel htmlFor={field.name}>
-                                                                父级
-                                                            </FieldLabel>
-                                                            <FieldContent>
-                                                                <Select
-                                                                    items={parentItems}
-                                                                    value={field.state.value ?? PARENT_NONE}
-                                                                    onValueChange={(value) => {
-                                                                        field.handleChange(
-                                                                            value ? String(value) : undefined,
-                                                                        );
-                                                                    }}
-                                                                >
-                                                                    <SelectTrigger
+                                            {showPath ? (
+                                                <form.Field
+                                                    name="path"
+                                                    children={(field) => {
+                                                        const isInvalid =
+                                                            !field.state.meta.isValid &&
+                                                            field.state.meta.isTouched;
+                                                        const isLink = routeType === "link";
+                                                        const isSet = routeType === "set";
+                                                        return (
+                                                            <Field data-invalid={isInvalid}>
+                                                                <FieldLabel htmlFor={field.name}>
+                                                                    路径
+                                                                    <RequiredMark />
+                                                                </FieldLabel>
+                                                                <FieldContent>
+                                                                    <Input
                                                                         id={field.name}
-                                                                        className="w-full"
+                                                                        name={field.name}
+                                                                        value={field.state.value ?? ""}
+                                                                        onBlur={field.handleBlur}
+                                                                        onChange={(e) =>
+                                                                            field.handleChange(
+                                                                                e.target.value,
+                                                                            )
+                                                                        }
+                                                                        aria-invalid={isInvalid}
+                                                                        placeholder={
+                                                                            isLink
+                                                                                ? "https://example.com"
+                                                                                : isSet
+                                                                                  ? "/admin"
+                                                                                  : "/admin/example"
+                                                                        }
+                                                                        autoComplete="off"
+                                                                        className="font-mono"
+                                                                    />
+                                                                </FieldContent>
+                                                                {isInvalid ? (
+                                                                    <FieldError
+                                                                        errors={field.state.meta.errors}
+                                                                    />
+                                                                ) : (
+                                                                    <FieldDescription>
+                                                                        {isLink
+                                                                            ? "仅支持 http/https 外链"
+                                                                            : isSet
+                                                                              ? "须为 / 或单段如 /admin、/test"
+                                                                              : "内部路径须为 /a/b 形式"}
+                                                                    </FieldDescription>
+                                                                )}
+                                                            </Field>
+                                                        );
+                                                    }}
+                                                />
+                                            ) : null}
+
+                                            {showParent ? (
+                                                <form.Field
+                                                    name="parentId"
+                                                    children={(field) => {
+                                                        const isInvalid =
+                                                            !field.state.meta.isValid &&
+                                                            field.state.meta.isTouched;
+                                                        return (
+                                                            <Field data-invalid={isInvalid}>
+                                                                <FieldLabel htmlFor={field.name}>
+                                                                    父级
+                                                                </FieldLabel>
+                                                                <FieldContent>
+                                                                    <Select
+                                                                        items={parentItems}
+                                                                        value={
+                                                                            field.state.value ??
+                                                                            PARENT_NONE
+                                                                        }
+                                                                        onValueChange={(value) => {
+                                                                            field.handleChange(
+                                                                                value
+                                                                                    ? String(value)
+                                                                                    : undefined,
+                                                                            );
+                                                                        }}
                                                                     >
-                                                                        <SelectValue placeholder="选择父级" />
-                                                                    </SelectTrigger>
-                                                                    <SelectContent>
-                                                                        <SelectGroup>
-                                                                            {parentItems.map((item) => (
-                                                                                <SelectItem
-                                                                                    key={item.value || "root"}
-                                                                                    value={item.value}
-                                                                                >
-                                                                                    {item.label}
-                                                                                </SelectItem>
-                                                                            ))}
-                                                                        </SelectGroup>
-                                                                    </SelectContent>
-                                                                </Select>
-                                                            </FieldContent>
-                                                            {isInvalid ? (
-                                                                <FieldError errors={field.state.meta.errors} />
-                                                            ) : (
-                                                                <FieldDescription>
-                                                                    仅可选分组或目录，留空则为根级
-                                                                </FieldDescription>
-                                                            )}
-                                                        </Field>
-                                                    );
-                                                }}
-                                            />
+                                                                        <SelectTrigger
+                                                                            id={field.name}
+                                                                            className="w-full"
+                                                                        >
+                                                                            <SelectValue placeholder="选择父级" />
+                                                                        </SelectTrigger>
+                                                                        <SelectContent>
+                                                                            <SelectGroup>
+                                                                                {parentItems.map(
+                                                                                    (item) => (
+                                                                                        <SelectItem
+                                                                                            key={
+                                                                                                item.value ||
+                                                                                                "root"
+                                                                                            }
+                                                                                            value={item.value}
+                                                                                        >
+                                                                                            {item.label}
+                                                                                        </SelectItem>
+                                                                                    ),
+                                                                                )}
+                                                                            </SelectGroup>
+                                                                        </SelectContent>
+                                                                    </Select>
+                                                                </FieldContent>
+                                                                {isInvalid ? (
+                                                                    <FieldError
+                                                                        errors={field.state.meta.errors}
+                                                                    />
+                                                                ) : (
+                                                                    <FieldDescription>
+                                                                        {routeType === "group"
+                                                                            ? "仅可选场景根；留空则为顶部分区"
+                                                                            : "可选场景根、分组或目录；留空则为根级"}
+                                                                    </FieldDescription>
+                                                                )}
+                                                            </Field>
+                                                        );
+                                                    }}
+                                                />
+                                            ) : null}
                                         </FieldGroup>
                                     </FieldSet>
                                 </>
-                            ) : null
-                        }
+                            );
+                        }}
                     </form.Subscribe>
 
                     <FieldSeparator />
@@ -527,6 +581,71 @@ export function EditPage({
                                     ) : null
                                 }
                             </form.Subscribe>
+                            <form.Subscribe selector={(state) => state.values.routeType}>
+                                {(routeType) =>
+                                    routeType === "set" ? null : (
+                                        <form.Field
+                                            name="scope"
+                                            children={(field) => {
+                                                const isInvalid =
+                                                    !field.state.meta.isValid &&
+                                                    field.state.meta.isTouched;
+                                                return (
+                                                    <Field data-invalid={isInvalid}>
+                                                        <FieldLabel htmlFor={field.name}>
+                                                            作用域
+                                                        </FieldLabel>
+                                                        <FieldContent>
+                                                            <Select
+                                                                items={ROUTE_SCOPE_LABEL}
+                                                                value={field.state.value}
+                                                                onValueChange={(value) => {
+                                                                    if (
+                                                                        value === "admin" ||
+                                                                        value === "public"
+                                                                    ) {
+                                                                        field.handleChange(
+                                                                            value as RouteScope,
+                                                                        );
+                                                                    }
+                                                                }}
+                                                            >
+                                                                <SelectTrigger
+                                                                    id={field.name}
+                                                                    className="w-full"
+                                                                >
+                                                                    <SelectValue placeholder="选择作用域" />
+                                                                </SelectTrigger>
+                                                                <SelectContent>
+                                                                    <SelectGroup>
+                                                                        {ROUTE_SCOPE_LABEL.map((item) => (
+                                                                            <SelectItem
+                                                                                key={item.value}
+                                                                                value={item.value}
+                                                                            >
+                                                                                {item.label}
+                                                                            </SelectItem>
+                                                                        ))}
+                                                                    </SelectGroup>
+                                                                </SelectContent>
+                                                            </Select>
+                                                        </FieldContent>
+                                                        {isInvalid ? (
+                                                            <FieldError
+                                                                errors={field.state.meta.errors}
+                                                            />
+                                                        ) : (
+                                                            <FieldDescription>
+                                                                后台侧栏只展示「后台」作用域；场景根不受此约束
+                                                            </FieldDescription>
+                                                        )}
+                                                    </Field>
+                                                );
+                                            }}
+                                        />
+                                    )
+                                }
+                            </form.Subscribe>
                             <form.Field
                                 name="isActive"
                                 children={(field) => (
@@ -534,7 +653,7 @@ export function EditPage({
                                         id={field.name}
                                         name={field.name}
                                         label="启用"
-                                        description="关闭后列表与侧栏将不再显示该路由"
+                                        description="关闭后列表与对应侧栏将不再显示该路由"
                                         checked={Boolean(field.state.value)}
                                         onBlur={field.handleBlur}
                                         onChange={field.handleChange}

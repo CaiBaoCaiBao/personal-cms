@@ -7,6 +7,14 @@ const internalPathSchema = z
         "内部路径须为 /a/b 形式",
     );
 
+/** 场景根：公开根 `/`，或单段如 `/admin`、`/test` */
+const setPathSchema = z.union([
+    z.literal("/"),
+    z
+        .string()
+        .regex(/^\/[a-zA-Z0-9_-]+$/, "场景根路径须为 / 或单段如 /admin"),
+]);
+
 const externalUrlSchema = z
     .url("外链格式不合法")
     .refine((value) => {
@@ -25,19 +33,34 @@ const baseFields = {
     isActive: z.boolean().default(true),
 };
 
+const scopedFields = {
+    ...baseFields,
+    scope: z.enum(["admin", "public"]).default("admin"),
+};
+
 export const createSystemRouterSchema = z.discriminatedUnion("routeType", [
-    // 分区：无 path、无 parent
+    // 场景根：结构节点，无 scope；有 path、无 parent（侧栏不渲染自身，子节点上提）
     z.object({
         ...baseFields,
+        routeType: z.literal("set"),
+        path: setPathSchema,
+        parentId: z.undefined().optional(),
+        defaultOpen: z.literal(false).default(false),
+        scope: z.literal("admin").default("admin"),
+    }),
+
+    // 分区：无 path；可挂在 set 下
+    z.object({
+        ...scopedFields,
         routeType: z.literal("group"),
-        path: z.null().optional(),          // 或不传
-        parentId: z.undefined().optional(), // 禁止父级
+        path: z.null().optional(),
+        parentId: z.string().min(1).optional(),
         defaultOpen: z.literal(false).default(false),
     }),
 
     // 内部页面
     z.object({
-        ...baseFields,
+        ...scopedFields,
         routeType: z.literal("page"),
         path: internalPathSchema,
         parentId: z.string().min(1).optional(),
@@ -49,7 +72,7 @@ export const createSystemRouterSchema = z.discriminatedUnion("routeType", [
 
     // 可折叠目录
     z.object({
-        ...baseFields,
+        ...scopedFields,
         routeType: z.literal("directory"),
         path: internalPathSchema,
         parentId: z.string().min(1).optional(),
@@ -61,7 +84,7 @@ export const createSystemRouterSchema = z.discriminatedUnion("routeType", [
 
     // 外链
     z.object({
-        ...baseFields,
+        ...scopedFields,
         routeType: z.literal("link"),
         path: externalUrlSchema,
         parentId: z.string().min(1).optional(),
@@ -71,7 +94,8 @@ export const createSystemRouterSchema = z.discriminatedUnion("routeType", [
 
 export const listSystemRouterQuerySchema = z.object({
     keyword: z.string().trim().min(1).optional(),
-    routeType: z.enum(["group", "page", "directory", "link"]).optional(),
+    routeType: z.enum(["set", "group", "page", "directory", "link"]).optional(),
+    scope: z.enum(["admin", "public"]).optional(),
     isActive: z
         .enum(["true", "false"])
         .optional()
@@ -95,11 +119,12 @@ export type PaginationQueryDTO = ListSystemRouterQueryDTO;
 
 export const defaultValueCreateSystemRouter: CreateSystemRouterFormValues = {
     name: "",
-    path: "/admin",
+    path: "/admin/example",
     icon: undefined,
     parentId: undefined,
     sortOrder: 0,
     defaultOpen: false,
-    routeType: "directory",
+    routeType: "page",
     isActive: true,
+    scope: "admin",
 } satisfies CreateSystemRouterFormValues;

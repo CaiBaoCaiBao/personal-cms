@@ -1,3 +1,5 @@
+"use client";
+
 import { MenuBtn } from "./menu-btn";
 import { menuBarConfig } from "./menu-btn-config";
 import { cn } from "@/lib/utils";
@@ -10,7 +12,7 @@ interface Props {
 
 export function FixedMenuBar({ className }: Props) {
     return (
-        <div className={cn(className)}>
+        <div className={cn("flex flex-wrap items-center gap-1", className)}>
             {menuBarConfig.map((menuBar, index) => (
                 <div key={menuBar.group} className="flex items-center gap-1">
                     <div className="flex items-center gap-1">

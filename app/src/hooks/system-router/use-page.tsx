@@ -19,6 +19,7 @@ function toSearch(params: ListSystemRouterQueryDTO) {
     const sp = new URLSearchParams();
     if (params.keyword) sp.set("keyword", params.keyword);
     if (params.routeType) sp.set("routeType", params.routeType);
+    if (params.scope) sp.set("scope", params.scope);
     if (typeof params.isActive === "boolean") {
         sp.set("isActive", String(params.isActive));
     }
@@ -34,6 +35,7 @@ type PageState = {
     refreshing: boolean;
     keyword: string;
     isActive: boolean | undefined;
+    scope: ListSystemRouterQueryDTO["scope"];
 };
 
 type PageActions = {
@@ -43,6 +45,7 @@ type PageActions = {
     handleRefreshRouter: () => void;
     setKeyword: (keyword: string) => void;
     setIsActive: (isActive: boolean | undefined) => void;
+    setScope: (scope: ListSystemRouterQueryDTO["scope"]) => void;
 };
 
 type PageData = {
@@ -147,6 +150,12 @@ export function usePage(
                 return { ...prev, isActive };
             });
         },
+        setScope: (scope) => {
+            setQueryParams((prev) => {
+                if (prev.scope === scope) return prev;
+                return { ...prev, scope };
+            });
+        },
     };
 
     const data: PageData = {
@@ -163,6 +172,7 @@ export function usePage(
             refreshing: refreshing,
             keyword,
             isActive: queryParams.isActive,
+            scope: queryParams.scope,
         },
         actions,
         data,

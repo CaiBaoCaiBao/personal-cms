@@ -27,20 +27,13 @@ export const getExtensions = (config: ExtensionType): Extensions => {
             placeholder: config.placeholder || "Write something …",
         }),
         ImageExtension.configure({
-            allowBase64: true,
-            resize: {
-                enabled: true,
-                directions: ["top", "bottom", "left", "right"],
-                minWidth: 50,
-                minHeight: 50,
-                alwaysPreserveAspectRatio: true,
-            }
+            allowBase64: false,
         }),
         Subscript.extend({
-            excludes: "subscript superscript",
+            excludes: "superscript",
         }),
         Superscript.extend({
-            excludes: "superscript subscript",
+            excludes: "subscript",
         }),
     ]
 }
