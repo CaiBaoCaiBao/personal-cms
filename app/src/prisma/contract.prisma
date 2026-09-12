@@ -62,7 +62,6 @@ model ContentTag {
   name String
   slug String
   description String?
-  color String?
   isActive Boolean @default(true) @map("is_active")
   createdAt TimestamptzString @default(now()) @map("created_at")
   updatedAt temporal.updatedAtString() @map("updated_at")

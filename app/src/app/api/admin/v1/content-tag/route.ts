@@ -17,7 +17,10 @@ const idQuerySchema = z.object({
 });
 
 const idsQuerySchema = z.object({
-    ids: z.array(z.string().min(1)),
+    ids: z.preprocess(
+        (value) => (Array.isArray(value) ? value : value == null ? [] : [value]),
+        z.array(z.string().min(1)).min(1),
+    ),
 });
 
 export const POST = apiHandler(async (req: Request) => {

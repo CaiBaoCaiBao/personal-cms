@@ -3,6 +3,5 @@ export const CONTENT_TAG_ITEM_KEYS = [
     "name",
     "slug",
     "description",
-    "color",
     "isActive",
 ] as const;

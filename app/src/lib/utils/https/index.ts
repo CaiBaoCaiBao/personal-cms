@@ -20,16 +20,17 @@ export class HTTP {
         try {
             const url = decodeURIComponent(input);
             const response = await fetch(url, { ...init });
-            if (!response.ok) {
-                return new AppError(
-                    "INTERNAL_ERROR",
-                    "网络请求失败",
-                    response.status
-                )
-            }
+            // if (!response.ok) {
+            //     throw new AppError(
+            //         "INTERNAL_ERROR",
+            //         "网络请求失败",
+            //         response.status
+            //     )
+            // }
             const data = await response.json();
             return data;
         } catch (e) {
+            if(e instanceof AppError) throw e;
             throw new AppError("INTERNAL_ERROR", "网络请求失败")
         }
     }

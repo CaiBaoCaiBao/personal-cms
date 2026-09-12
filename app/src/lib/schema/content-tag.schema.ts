@@ -16,13 +16,12 @@ export const createContentTagSchema = z.object({
     name: z.string().min(1),
     slug: contentSlugSchema,
     description: z.string(),
-    color: z.string(),
     isActive: z.boolean().default(true),
 });
 
 export const pageQuerySchema = z.object({
     pageNumber: z.coerce.number().min(1).default(1),
-    pageSize: z.coerce.number().min(1).default(10),
+    pageSize: z.coerce.number().min(1).default(1),
     isActive: z
         .enum(["true", "false"])
         .optional()
@@ -32,5 +31,20 @@ export const pageQuerySchema = z.object({
     keyword: z.string().trim().optional()
 });
 
-export type CreateContentTagDto = z.infer<typeof createContentTagSchema>;
+export type CreateContentTagFormValues = z.input<typeof createContentTagSchema>;
+export type CreateContentTagDto = z.output<typeof createContentTagSchema>;
 export type PageQueryDto = z.infer<typeof pageQuerySchema>;
+
+export const defaultValueEditForm: CreateContentTagFormValues = {
+    name: "",
+    slug: "",
+    description: "",
+    isActive: true,
+}
+
+export const defaultValuePageQuery: PageQueryDto = {
+    pageNumber: 1,
+    pageSize: 10,
+    isActive: undefined,
+    keyword: undefined,
+}

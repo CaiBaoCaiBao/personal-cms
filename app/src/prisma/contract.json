@@ -188,13 +188,6 @@
           },
           "ContentTag": {
             "fields": {
-              "color": {
-                "nullable": true,
-                "type": {
-                  "codecId": "pg/text@1",
-                  "kind": "scalar"
-                }
-              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -255,9 +248,6 @@
             "relations": {},
             "storage": {
               "fields": {
-                "color": {
-                  "column": "color"
-                },
                 "createdAt": {
                   "column": "created_at"
                 },
@@ -590,11 +580,6 @@
             },
             "content_tags": {
               "columns": {
-                "color": {
-                  "codecId": "pg/text@1",
-                  "nativeType": "text",
-                  "nullable": true
-                },
                 "created_at": {
                   "codecId": "pg/timestamptz-string@1",
                   "default": {
@@ -837,7 +822,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "4d97065ff6fbf0eb77ffd08c8460550626925b06bee5c72d6ecc28497a05f1d5"
+    "storageHash": "98a5472cfe295503b5ec1ec570a5143ed6c3308a19711398ec422af8978ae39f"
   },
   "execution": {
     "executionHash": "f40d3b4afb209f8d8848b3005c2df68603dc955df9205146341285a197b15ed2",
