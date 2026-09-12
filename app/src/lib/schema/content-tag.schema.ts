@@ -13,7 +13,7 @@ export const contentSlugSchema = z
     );
 
 export const createContentTagSchema = z.object({
-    name: z.string().min(1),
+    name: z.string().trim().min(1),
     slug: contentSlugSchema,
     description: z.string(),
     isActive: z.boolean().default(true),
