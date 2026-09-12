@@ -8,6 +8,8 @@ import {
   FlaskConical,
   Tag,
   Scale,
+  FolderTree,
+  Images,
   Link as LinkIcon,
   type LucideIcon,
 } from "lucide-react";
@@ -23,6 +25,8 @@ const ICON_MAP: Record<string, LucideIcon> = {
   FlaskConical,
   Tag,
   Scale,
+  FolderTree,
+  Images,
 };
 
 /** 将 DB 中的 Lucide 图标名解析为组件 */
