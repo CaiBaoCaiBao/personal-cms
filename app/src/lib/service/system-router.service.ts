@@ -383,13 +383,15 @@ export class SystemRouterService {
         if (!segments.every((s) => /^[a-zA-Z0-9_-]+$/.test(s))) return false;
 
         if (parentPath) {
-            if (!parentPath.startsWith("/")) return false;
-            const prefix = parentPath.endsWith("/")
-                ? parentPath
-                : `${parentPath}/`;
-            return path.startsWith(prefix);
+            if (!parentPath.startsWith("/") || parentPath === "/") return false;
+            if (parentPath.endsWith("/")) return false;
+            const prefix = `${parentPath}/`;
+            if (!path.startsWith(prefix)) return false;
+            const rest = path.slice(prefix.length);
+            // 只能比父级多恰好一段
+            return rest.length > 0 && !rest.includes("/");
         }
-        return true;
+        return segments.length === 1;
     }
     /**
      * @description 转换为输入对象

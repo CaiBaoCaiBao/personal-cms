@@ -42,7 +42,10 @@ export const createSystemRouterSchema = z.discriminatedUnion("routeType", [
         path: internalPathSchema,
         parentId: z.string().min(1).optional(),
         defaultOpen: z.literal(false).default(false),
-    }),
+    }).refine(
+        (data) => data.parentId || data.path.slice(1).split("/").length === 1,
+        { message: "无父级时路径只能有一段，如 /admin", path: ["path"] },
+    ),
 
     // 可折叠目录
     z.object({
@@ -51,7 +54,10 @@ export const createSystemRouterSchema = z.discriminatedUnion("routeType", [
         path: internalPathSchema,
         parentId: z.string().min(1).optional(),
         defaultOpen: z.boolean().default(false),
-    }),
+    }).refine(
+        (data) => data.parentId || data.path.slice(1).split("/").length === 1,
+        { message: "无父级时路径只能有一段，如 /admin", path: ["path"] },
+    ),
 
     // 外链
     z.object({
