@@ -10,6 +10,12 @@ import Link from "next/link";
 import { DeleteDrawer } from "./delete-drawer";
 import { Spinner } from "@/components/ui/spinner";
 import { ListSystemRouterQueryDTO } from "@/lib/schema/system-router.schema";
+import {
+    InputGroup,
+    InputGroupAddon,
+    InputGroupInput
+} from "@/components/ui/input-group";
+import { Search } from "lucide-react";
 
 interface Props {
     params: ListSystemRouterQueryDTO;
@@ -24,16 +30,29 @@ export function SystemRouterPage({ params }: Props) {
                     actions.setDeleteDrawerOpen(true);
                     actions.setDeleteRow(row);
                 },
+                isActive: state.isActive,
+                onIsActiveChange: actions.setIsActive,
             }),
-        [],
+        [state.isActive],
     );
     return (
         <div>
-            <div>
+            <div className="flex sm:flex-row flex-col items-center gap-2">
+                <InputGroup>
+                    <InputGroupAddon>
+                        <Search />
+                    </InputGroupAddon>
+                    <InputGroupInput
+                        value={state.keyword}
+                        placeholder="搜索名称或路径"
+                        onChange={(e) => actions.setKeyword(e.target.value)}
+                    />
+                </InputGroup>
                 <Button
                     nativeButton={false}
                     size="sm"
                     render={<Link href="/admin/system/router/edit" />}
+                    className="sm:w-auto w-full"
                 >
                     <Plus />
                     新增
@@ -43,6 +62,7 @@ export function SystemRouterPage({ params }: Props) {
                     variant="outline"
                     onClick={actions.handleRefreshRouter}
                     disabled={state.refreshing}
+                    className="sm:w-auto w-full"
                 >
                     {state.refreshing ? (<>
                         <Spinner /> Refreshing...
