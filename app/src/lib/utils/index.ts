@@ -15,3 +15,4 @@ export { isEmpty } from "./is-empty";
 export * from "./object";
 export { compressImage } from "./compress";
 export * from "./format";
+export * from "./has-permission";
