@@ -40,6 +40,7 @@ const TYPE_BADGE_CLASS: Record<RouteType, string> = {
     group: "bg-muted text-muted-foreground",
     directory: "bg-sky-500/10 text-sky-700 dark:text-sky-300",
     page: "bg-violet-500/10 text-violet-700 dark:text-violet-300",
+    button: "bg-rose-500/10 text-rose-700 dark:text-rose-300",
     link: "bg-amber-500/10 text-amber-700 dark:text-amber-300",
 };
 

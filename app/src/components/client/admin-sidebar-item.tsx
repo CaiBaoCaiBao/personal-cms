@@ -26,7 +26,8 @@ interface Props {
 }
 
 export function AdminSidebarItem({ item, isSub = false }: Props) {
-    const hasChildren = Boolean(item.children?.length);
+    const hasChildren =
+        item.routeType === "directory" && Boolean(item.children?.length);
     const Icon = resolveNavIcon(item.icon);
     const pathname = usePathname();
     const isActive = pathname === item.path;

@@ -90,11 +90,22 @@ export const createSystemRouterSchema = z.discriminatedUnion("routeType", [
         parentId: z.string().min(1).optional(),
         defaultOpen: z.literal(false).default(false),
     }),
+
+    // 页内站内跳转：必须挂在 page 下
+    z.object({
+        ...scopedFields,
+        routeType: z.literal("button"),
+        path: internalPathSchema,
+        parentId: z.string().min(1, "按钮必须挂在页面下"),
+        defaultOpen: z.literal(false).default(false),
+    }),
 ]);
 
 export const listSystemRouterQuerySchema = z.object({
     keyword: z.string().trim().min(1).optional(),
-    routeType: z.enum(["set", "group", "page", "directory", "link"]).optional(),
+    routeType: z
+        .enum(["set", "group", "page", "directory", "link", "button"])
+        .optional(),
     scope: z.enum(["admin", "public"]).optional(),
     isActive: z
         .enum(["true", "false"])

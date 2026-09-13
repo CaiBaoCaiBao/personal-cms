@@ -36,6 +36,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
+    ROUTE_PARENT_HINT,
+    ROUTE_PARENT_TYPES,
     ROUTE_SCOPE_LABEL,
     ROUTE_TYPE_LABEL,
 } from "@/constant/system-router.constant";
@@ -54,10 +56,11 @@ const PARENT_NONE = "";
 
 const ROUTE_TYPE_HINT: Record<RouteType, string> = {
     set: "场景根：路径为 / 或单段如 /admin；侧栏不显示自身，子节点上提。不受作用域约束。",
-    group: "分组作为侧栏分区，无路径；可挂在场景根下。",
-    directory: "目录可折叠，需内部路径，可设置默认展开。",
-    page: "内部页面，路径须为 /a/b 形式。",
-    link: "外部链接，仅支持 http/https。",
+    group: "分组作为侧栏分区，无路径；只能挂在场景根下。子节点只需落在场景根前缀下。",
+    directory: "可折叠目录，可多层嵌套；可挂在场景根、分组或目录下。",
+    page: "内部页面；可挂在场景根、分组或目录下。侧栏只显示自身，可挂按钮子节点。",
+    button: "页内站内跳转，必须挂在页面下；不进入侧栏。",
+    link: "外部链接，仅支持 http/https；不能作为父级。",
 };
 
 function RequiredMark() {
@@ -297,23 +300,25 @@ export function EditPage({
 
                     <form.Subscribe selector={(state) => state.values.routeType}>
                         {(routeType) => {
-                            const filteredParents =
-                                routeType === "group"
-                                    ? parentRouters.filter((p) => p.routeType === "set")
-                                    : parentRouters.filter(
-                                          (p) =>
-                                              p.routeType === "set" ||
-                                              p.routeType === "group" ||
-                                              p.routeType === "directory",
-                                      );
+                            const allowedParents = ROUTE_PARENT_TYPES[routeType];
+                            const filteredParents = parentRouters.filter((p) =>
+                                (allowedParents as readonly string[]).includes(
+                                    p.routeType,
+                                ),
+                            );
+                            const parentRequired = routeType === "button";
                             const parentItems = [
-                                {
-                                    value: PARENT_NONE,
-                                    label:
-                                        routeType === "group"
-                                            ? "无（顶部分区）"
-                                            : "无（根级）",
-                                },
+                                ...(parentRequired
+                                    ? []
+                                    : [
+                                          {
+                                              value: PARENT_NONE,
+                                              label:
+                                                  routeType === "group"
+                                                      ? "无（顶部分区）"
+                                                      : "无（根级）",
+                                          },
+                                      ]),
                                 ...filteredParents.map((item) => ({
                                     value: item.id,
                                     label: item.path
@@ -383,7 +388,7 @@ export function EditPage({
                                                                             ? "仅支持 http/https 外链"
                                                                             : isSet
                                                                               ? "须为 / 或单段如 /admin、/test"
-                                                                              : "内部路径须为 /a/b 形式"}
+                                                                              : "内部路径须为 /a/b 形式；父级为分组时只需落在场景根前缀下，如 /admin/content/tags"}
                                                                     </FieldDescription>
                                                                 )}
                                                             </Field>
@@ -403,6 +408,9 @@ export function EditPage({
                                                             <Field data-invalid={isInvalid}>
                                                                 <FieldLabel htmlFor={field.name}>
                                                                     父级
+                                                                    {parentRequired ? (
+                                                                        <RequiredMark />
+                                                                    ) : null}
                                                                 </FieldLabel>
                                                                 <FieldContent>
                                                                     <Select
@@ -450,9 +458,7 @@ export function EditPage({
                                                                     />
                                                                 ) : (
                                                                     <FieldDescription>
-                                                                        {routeType === "group"
-                                                                            ? "仅可选场景根；留空则为顶部分区"
-                                                                            : "可选场景根、分组或目录；留空则为根级"}
+                                                                        {ROUTE_PARENT_HINT[routeType]}
                                                                     </FieldDescription>
                                                                 )}
                                                             </Field>

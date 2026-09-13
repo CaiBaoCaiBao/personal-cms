@@ -59,7 +59,11 @@ export class SystemRouterDao {
                 .orderBy((r) => r.sortOrder.asc())
                 .all();
             return rows
-                .filter((row) => row.routeType === "set" || row.scope === "admin")
+                .filter(
+                    (row) =>
+                        row.routeType !== "button" &&
+                        (row.routeType === "set" || row.scope === "admin"),
+                )
                 .map(({ scope: _scope, ...row }) => row);
         } catch (e) {
             if (e instanceof AppError) throw e;
@@ -84,14 +88,14 @@ export class SystemRouterDao {
     }
 
     /**
-     * @description 父级候选：set / group / directory
+     * @description 父级候选：set / group / directory / page
      */
     static async findParentCandidates() {
         try {
             return await db.orm.public.SystemRouter.where({
                 deletedAt: null,
             })
-                .where((r) => r.routeType.in(["set", "group", "directory"]))
+                .where((r) => r.routeType.in(["set", "group", "directory", "page"]))
                 .select("id", "name", "path", "routeType", "parentId", "sortOrder")
                 .orderBy((r) => r.sortOrder.asc())
                 .all();

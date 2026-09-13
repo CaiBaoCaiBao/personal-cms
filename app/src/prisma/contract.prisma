@@ -6,6 +6,7 @@ enum RouteType {
   page
   directory
   link
+  button
 
   @@type("pg/text@1")
 }
@@ -30,7 +31,7 @@ enum ArticleStatus {
 model SystemRouter{
   id          String    @id @default(cuid(2))
   name        String
-  path        String?   // set/page/directory 内部路径；group 可空；link 为 URL
+  path        String?   // set/page/directory/button 内部路径；group 可空；link 为 URL
   icon        String?   @map("icon")          // Lucide 名，如 "LayoutDashboard"
   parentId    String?   @map("parent_id")
   routeType   RouteType @map("route_type")

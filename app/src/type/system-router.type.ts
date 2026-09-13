@@ -56,7 +56,7 @@ export type SystemRouterParentOption = {
     id: string;
     name: string;
     path: string | null;
-    routeType: Extract<RouteType, "set" | "group" | "directory">;
+    routeType: Extract<RouteType, "set" | "group" | "directory" | "page">;
 };
 
 /** 列表行VO */

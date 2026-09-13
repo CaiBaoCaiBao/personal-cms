@@ -72,6 +72,14 @@ function toFormValues(row?: SystemRouterListVO): CreateSystemRouterFormValues {
                 parentId: row.parentId ?? undefined,
                 defaultOpen: false,
             };
+        case "button":
+            return {
+                ...base,
+                routeType: "button",
+                path: row.path ?? "/admin",
+                parentId: row.parentId ?? "",
+                defaultOpen: false,
+            };
     }
 }
 
@@ -152,6 +160,16 @@ export function applyRouteTypeValues(
             path: internalPath,
             parentId: current.parentId,
             defaultOpen: current.defaultOpen ?? false,
+        };
+    }
+
+    if (next === "button") {
+        return {
+            ...base,
+            routeType: "button",
+            path: internalPath,
+            parentId: current.parentId ?? "",
+            defaultOpen: false,
         };
     }
 

@@ -15,7 +15,10 @@ import type {
     SystemRouterTreeNode,
 } from "@/type/system-router.type";
 import { AppError } from "@/lib/utils/errors/app-error";
-import { ROUTE_TYPE_LABEL_MAP } from "@/constant/system-router.constant";
+import {
+    ROUTE_PARENT_TYPES,
+    ROUTE_TYPE_LABEL_MAP,
+} from "@/constant/system-router.constant";
 import type { SystemRouterRow } from "@/type/system-router.type";
 
 type ParentRow = NonNullable<
@@ -56,10 +59,19 @@ export class SystemRouterService {
                     throw new AppError("NOT_FOUND", "父级路由不存在", 404);
                 }
                 this.assertParentAllowed(data.routeType, parent.routeType);
+            } else if (data.routeType === "button") {
+                throw new AppError("VALIDATION_ERROR", "按钮必须挂在页面下", 400);
             }
 
             const parentPath = await this.resolveEffectivePath(parent);
-            if (!this.validatePath(data.routeType, data.path, parentPath)) {
+            if (
+                !this.validatePath(
+                    data.routeType,
+                    data.path,
+                    parentPath,
+                    parent?.routeType === "group",
+                )
+            ) {
                 throw new AppError("VALIDATION_ERROR", "路由路径不合法", 400);
             }
 
@@ -86,6 +98,7 @@ export class SystemRouterService {
 
             if (data.routeType === "group") {
                 await this.assertGroupParent(data.parentId, id);
+                await this.assertChildrenFitType(id, "group");
                 await SystemRouterDao.update(id, this.toInput(data));
                 return;
             }
@@ -94,6 +107,7 @@ export class SystemRouterService {
                 if (data.parentId) {
                     throw new AppError("VALIDATION_ERROR", "场景根不能有父级", 400);
                 }
+                await this.assertChildrenFitType(id, "set");
                 if (!this.validatePath("set", data.path, null)) {
                     throw new AppError("VALIDATION_ERROR", "路由路径不合法", 400);
                 }
@@ -119,10 +133,21 @@ export class SystemRouterService {
                 if (this.isSelfOrDescendant(data.parentId, id, rows)) {
                     throw new AppError("VALIDATION_ERROR", "不能将自身或子孙设为父级", 400);
                 }
+            } else if (data.routeType === "button") {
+                throw new AppError("VALIDATION_ERROR", "按钮必须挂在页面下", 400);
             }
 
+            await this.assertChildrenFitType(id, data.routeType);
+
             const parentPath = await this.resolveEffectivePath(parent);
-            if (!this.validatePath(data.routeType, data.path, parentPath)) {
+            if (
+                !this.validatePath(
+                    data.routeType,
+                    data.path,
+                    parentPath,
+                    parent?.routeType === "group",
+                )
+            ) {
                 throw new AppError("VALIDATION_ERROR", "路由路径不合法", 400);
             }
 
@@ -181,7 +206,7 @@ export class SystemRouterService {
                 path: row.path,
                 routeType: row.routeType as Extract<
                     RouteType,
-                    "set" | "group" | "directory"
+                    "set" | "group" | "directory" | "page"
                 >,
             }));
         } catch (e) {
@@ -257,10 +282,15 @@ export class SystemRouterService {
         }
 
         const visibleOf = (parentId: string | null) =>
-            this.flattenHiddenSets(byParent.get(parentId) ?? [], byParent);
+            this.flattenHiddenSets(byParent.get(parentId) ?? [], byParent).filter(
+                (row) => row.routeType !== "button",
+            );
 
         const toItem = (row: SystemRouterNavRow): AdminNavItem => {
-            const children = visibleOf(row.id).map(toItem);
+            const children =
+                row.routeType === "directory"
+                    ? visibleOf(row.id).map(toItem)
+                    : [];
             return {
                 id: row.id,
                 title: row.name,
@@ -432,22 +462,52 @@ export class SystemRouterService {
     }
 
     /**
-     * @description 断言父级是否允许（page/directory/link）
+     * @description 断言父子类型：set-(group)-(directory)*-page-(button)
      */
     private static assertParentAllowed(child: RouteType, parent: RouteType) {
-        if (parent === "link" || parent === "page") {
-            throw new AppError("VALIDATION_ERROR", "页面/外链不能作为父级", 400);
-        }
         if (child === "set") {
             throw new AppError("VALIDATION_ERROR", "场景根不能有父级", 400);
         }
-        if (child === "group" && parent !== "set") {
-            throw new AppError("VALIDATION_ERROR", "分组只能挂在场景根下", 400);
+        const allowed = ROUTE_PARENT_TYPES[child];
+        if (!(allowed as readonly RouteType[]).includes(parent)) {
+            throw new AppError(
+                "VALIDATION_ERROR",
+                `${ROUTE_TYPE_LABEL_MAP[child]}不能挂在${ROUTE_TYPE_LABEL_MAP[parent]}下`,
+                400,
+            );
         }
     }
 
     /**
-     * @description 解析父级有效路径（group 无 path，向上找到 set/directory）
+     * @description 更新类型后，既有子节点仍须符合层级
+     */
+    private static async assertChildrenFitType(id: string, nextType: RouteType) {
+        const childIds = await SystemRouterDao.findChildren(id);
+        if (childIds.length === 0) return;
+        if (nextType === "button" || nextType === "link") {
+            throw new AppError(
+                "VALIDATION_ERROR",
+                `${ROUTE_TYPE_LABEL_MAP[nextType]}不能有子节点`,
+                400,
+            );
+        }
+        for (const childId of childIds) {
+            const child = await SystemRouterDao.findRouterById(childId);
+            if (!child) continue;
+            try {
+                this.assertParentAllowed(child.routeType, nextType);
+            } catch {
+                throw new AppError(
+                    "VALIDATION_ERROR",
+                    `改为${ROUTE_TYPE_LABEL_MAP[nextType]}后，子节点「${child.name}」类型不合法`,
+                    400,
+                );
+            }
+        }
+    }
+
+    /**
+     * @description 解析父级有效路径（group 无 path，向上找到 set/directory；group 本身不占路径）
      */
     private static async resolveEffectivePath(
         parent: ParentRow | null,
@@ -463,12 +523,14 @@ export class SystemRouterService {
     }
 
     /**
-     * @description 验证路径是否合法
+     * @description 验证路径是否合法。
+     * prefixOnly：父级为 group 时只要求落在场景根前缀下，不限制比父路径多几段。
      */
     private static validatePath(
         routeType: RouteType,
         path: string,
         parentPath?: string | null,
+        prefixOnly = false,
     ) {
         if (routeType === "group") return true;
         if (!path?.trim()) return false;
@@ -508,13 +570,15 @@ export class SystemRouterService {
 
         if (parentPath) {
             if (parentPath === "/") {
-                return segments.length === 1;
+                return prefixOnly ? segments.length >= 1 : segments.length === 1;
             }
             if (!parentPath.startsWith("/") || parentPath.endsWith("/")) return false;
             const prefix = `${parentPath}/`;
             if (!path.startsWith(prefix)) return false;
             const rest = path.slice(prefix.length);
-            return rest.length > 0 && !rest.includes("/");
+            if (!rest.length) return false;
+            if (prefixOnly) return !rest.split("/").some((s) => !s);
+            return !rest.includes("/");
         }
         return segments.length === 1;
     }
