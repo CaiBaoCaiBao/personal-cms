@@ -5,6 +5,7 @@ import {
     UploadProgressOptions
 } from './type';
 import { isEmpty } from '../is-empty';
+import { AppError, ValidationError } from "../errors/app-error";
 
 export class Http {
     /**
@@ -99,22 +100,22 @@ export class Http {
      * @param options 上传进度选项
      * @returns 响应数据
      */
-    // static uploadProgress(input: string, options: UploadProgressOptions) {
-    //     return new Promise((resolve, reject) => {
-    //         const xhr = new XMLHttpRequest();
-    //         xhr.open("POST", input);
-    //         xhr.upload.onprogress = (e) => {
-    //             if (!e.lengthComputable) return;
-    //             options.onProgress && options.onProgress(e.loaded / e.total);
-    //         }
-    //         xhr.onload = () => {
-    //             if (xhr.status >= 200 && xhr.status < 300) resolve(xhr.responseText);
-    //             else reject(new AppError("VALIDATION_ERROR", xhr.responseText || "Upload failed"));
-    //         };
-    //         xhr.onerror = () => reject(new AppError("VALIDATION_ERROR", "Upload failed"));
-    //         xhr.send(options.data);
-    //     })
-    // }
+    static uploadProgress(input: string, options: UploadProgressOptions) {
+        return new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.open("POST", input);
+            xhr.upload.onprogress = (e) => {
+                if (!e.lengthComputable) return;
+                options.onProgress && options.onProgress(e.loaded / e.total);
+            }
+            xhr.onload = () => {
+                if (xhr.status >= 200 && xhr.status < 300) resolve(xhr.responseText);
+                else reject(new AppError("VALIDATION_ERROR", xhr.responseText || "Upload failed"));
+            };
+            xhr.onerror = () => reject(new AppError("VALIDATION_ERROR", "Upload failed"));
+            xhr.send(options.data);
+        })
+    }
     private static async http({
         input, init
     }: HttpClientOptions) {
@@ -125,7 +126,8 @@ export class Http {
             const data = await response.json();
             return data;
         } catch (e) {
-            // TODO: 处理错误
+            if (e instanceof AppError) throw e;
+            throw new AppError("INTERNAL_ERROR", "网络请求失败")
         }
     }
     /**
@@ -148,7 +150,10 @@ export class Http {
             return;
         }
         if (typeof value === "object" && value !== null) {
-            // throw ValidationError
+            throw new ValidationError(
+                `Query 参数 "${key}" 不能是对象，请改用扁平字段或放入请求体`,
+                { key, value: JSON.stringify(value) },
+            );
         }
         query.append(key, String(value));
     }
