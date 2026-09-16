@@ -1,7 +1,14 @@
+import {
+    SidebarProvider,
+    SidebarInset
+} from "@/components/ui/sidebar";
+import { AdminSidebar } from "@/components/server/admin-sidebar";
 export default function Layout({ children }: LayoutProps<"/">) {
     return (
-        <div>
+        <SidebarProvider>
+            <AdminSidebar />
+            <SidebarInset />
             {children}
-        </div>
+        </SidebarProvider>
     )
 }
