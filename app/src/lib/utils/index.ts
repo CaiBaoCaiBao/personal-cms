@@ -2,6 +2,7 @@ export * from "./component-map";
 export * from "./is-empty";
 export * from "./build-path";
 export * from "./http";
+export * from "./object";
 
 export type { AppErrorCode } from "./errors/type";
 export * from "./errors/app-error";
