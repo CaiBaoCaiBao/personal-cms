@@ -6,6 +6,7 @@ import {
 } from './type';
 import { isEmpty } from '../is-empty';
 import { AppError, ValidationError } from "../errors/app-error";
+import { ApiSuccess } from "@/type/api-result.type";
 
 export class Http {
     /**
@@ -14,7 +15,7 @@ export class Http {
      * @param options 请求选项
      * @returns 响应数据
      */
-    static async get(route: string, options?: HttpQueryOptions) {
+    static async get<T>(route: string, options?: HttpQueryOptions): Promise<ApiSuccess<T>> {
         const { params, headers, signal } = options || {};
         const queryStr = this.buildQueryStr(params);
         const input = queryStr ? `${route}?${queryStr}` : route;
@@ -35,7 +36,7 @@ export class Http {
      * @param options 请求选项
      * @returns 响应数据
      */
-    static async delete(route: string, options?: HttpQueryOptions) {
+    static async delete<T>(route: string, options?: HttpQueryOptions): Promise<ApiSuccess<T>> {
         const { params, headers, signal } = options || {};
         const queryStr = this.buildQueryStr(params);
         const input = queryStr ? `${route}?${queryStr}` : route;
@@ -56,7 +57,7 @@ export class Http {
      * @param options 请求选项
      * @returns 响应数据
      */
-    static async post(route: string, options?: HttpBodyOptions) {
+    static async post<T>(route: string, options?: HttpBodyOptions): Promise<ApiSuccess<T>> {
         const { params, headers: optionsHeaders, signal } = options || {};
         const { body, headers } = this.buildBody(params);
         return await this.http({
@@ -78,7 +79,7 @@ export class Http {
      * @param options 请求选项
      * @returns 响应数据
      */
-    static async put(route: string, options?: HttpBodyOptions) {
+    static async put<T>(route: string, options?: HttpBodyOptions): Promise<ApiSuccess<T>> {
         const { params, headers: optionsHeaders, signal } = options || {};
         const { body, headers } = this.buildBody(params);
         return await this.http({
@@ -116,9 +117,9 @@ export class Http {
             xhr.send(options.data);
         })
     }
-    private static async http({
+    private static async http<T>({
         input, init
-    }: HttpClientOptions) {
+    }: HttpClientOptions): Promise<ApiSuccess<T>> {
         try {
             const url = decodeURIComponent(input);
             const response = await fetch(url, { ...init });
