@@ -35,6 +35,10 @@
               {
                 "name": "button",
                 "value": "button"
+              },
+              {
+                "name": "link",
+                "value": "link"
               }
             ]
           }
@@ -189,8 +193,8 @@
             "system_routers": {
               "checks": [
                 {
-                  "expression": "\"route_type\" IN ('set', 'group', 'directory', 'page', 'button')",
-                  "name": "system_routers_route_type_check_c1145ef3",
+                  "expression": "\"route_type\" IN ('set', 'group', 'directory', 'page', 'button', 'link')",
+                  "name": "system_routers_route_type_check_e2188cc5",
                   "prefix": "system_routers_route_type_check"
                 }
               ],
@@ -321,7 +325,8 @@
                 "group",
                 "directory",
                 "page",
-                "button"
+                "button",
+                "link"
               ]
             }
           }
@@ -330,7 +335,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "ff3a1e75b01d38acf7c4c490b9a65d9168724b0483e2a3b74cdfc6ef4f03265d"
+    "storageHash": "366b866db5f9868a1b9788583f1b4b9fdaa8329924c56eed1f7d34bb35d375e6"
   },
   "execution": {
     "executionHash": "6271e2e0b9c0595064e8e947214fee6bfd6bf22e178af92d9e786d729bab4a7e",

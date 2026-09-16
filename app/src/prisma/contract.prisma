@@ -1,11 +1,12 @@
 // use prisma-8
 
 enum RouteType {
-    set
-    group
-    directory
-    page
-    button
+    set // 集合
+    group // 分组
+    directory // 目录
+    page // 页面
+    button // 按钮链接
+    link // 外链
 
     @@type("pg/text@1")
 }
