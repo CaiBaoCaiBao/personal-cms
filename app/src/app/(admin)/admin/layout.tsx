@@ -7,8 +7,9 @@ export default function Layout({ children }: LayoutProps<"/">) {
     return (
         <SidebarProvider>
             <AdminSidebar />
-            <SidebarInset />
-            {children}
+            <SidebarInset >
+                {children}
+            </SidebarInset>
         </SidebarProvider>
     )
 }

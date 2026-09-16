@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Folder, LayoutDashboard, User } from "lucide-react";
+import { LayoutDashboard, FlaskConical } from "lucide-react";
 
 type AdminSidebarNodeBase = {
     id: string;
@@ -33,5 +33,19 @@ export const adminSidebarTree: AdminSidebarTree[] = [
         type: "item",
         icon: LayoutDashboard,
         label: "Dashboard",
+    },
+    {
+        id: "lab",
+        type: "directory",
+        label: "Lab",
+        icon: FlaskConical,
+        children: [
+            {
+                id: "editor-lab",
+                label: "Editor Lab",
+                href: "/admin/lab/editor-lab",
+                type: "item",
+            }
+        ]
     }
 ];
