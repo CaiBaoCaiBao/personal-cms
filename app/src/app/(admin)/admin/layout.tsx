@@ -7,7 +7,7 @@ export default function Layout({ children }: LayoutProps<"/">) {
     return (
         <SidebarProvider>
             <AdminSidebar />
-            <SidebarInset >
+            <SidebarInset className="min-h-screen px-2" >
                 {children}
             </SidebarInset>
         </SidebarProvider>

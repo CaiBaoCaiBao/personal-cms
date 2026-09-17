@@ -4,29 +4,32 @@ import { ForwardRefEditor } from '../editor';
 import { FixedToolbar } from '../editor/toolbar/fixed-toolbar';
 import {
     toolbarPlugin,
-    UndoRedo,
-    BoldItalicUnderlineToggles,
-    BlockTypeSelect,
-    DiffSourceToggleWrapper,
     diffSourcePlugin,
-    InsertTable,
-    CodeToggle,
-    InsertThematicBreak,
-    ListsToggle,
 } from '@mdxeditor/editor';
+import { useState } from 'react';
+import { Button } from '@/components/ui/button';
 export function LabEditorPage() {
+    const [markdown, setMarkdown] = useState("");
     return (
-        <div>
+        <div className='h-screen'>
             <ForwardRefEditor
-                markdown={""}
+                markdown={markdown}
+                onChange={(value) => setMarkdown(value)}
                 plugins={[
-                    diffSourcePlugin({ diffMarkdown: 'An older version', viewMode: 'rich-text' }),
+                    diffSourcePlugin({
+                        diffMarkdown: 'An older version',
+                        viewMode: 'rich-text',
+                        readOnlyDiff: true,
+                    }),
                     toolbarPlugin({
                         toolbarClassName: "toolbar flex items-center",
                         toolbarContents: () => <FixedToolbar />
                     })
                 ]}
             />
+            <Button onClick={() => console.log(markdown)}>
+                Save
+            </Button>
         </div>
     )
 }
