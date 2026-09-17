@@ -1,5 +1,6 @@
 {
   "name": "app",
+  "type": "module",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -7,13 +8,18 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "shadcn:add": "pnpm dlx shadcn@latest add"
+    "shadcn:add": "pnpm dlx shadcn@latest add",
+    "contract:emit": "prisma contract emit",
+    "test":"vitest",
+    "db:update":"prisma db update"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
     "@mdxeditor/editor": "^4.2.5",
+    "@prisma/orm-postgres": "8.0.0-rc.11",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.3.0",
+    "dotenv": "^17.4.2",
     "lucide-react": "^1.46.0",
     "next": "16.3.5",
     "react": "19.2.8",
@@ -23,12 +29,14 @@
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@prisma/cli-engine": "0.4.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.5",
+    "prisma": "8.0.0-rc.15",
     "tailwindcss": "^4",
     "typescript": "^5"
   },

@@ -1,0 +1,51 @@
+// use prisma-8
+
+// 分类
+// 根节点约定：parentId 存空字符串（非 NULL），这样 @@unique([name, parentId]) 对根节点同名也生效。
+// 因此 parentId 不做指向 Category.id 的外键（"" 不是合法父行）。
+model Category {
+  id          String                @id @default(uuid())
+  name        String
+  description String?
+  parentId    String                @default("") @map("parent_id")
+  isActive    Boolean               @default(true) @map("is_active")
+  createdAt   TimestamptzString     @default(now()) @map("created_at")
+  updatedAt   temporal.updatedAtString() @map("updated_at")
+  deletedAt   TimestamptzString?    @map("deleted_at")
+
+  @@unique([name, parentId])
+  @@index([parentId])
+  @@map("categories")
+}
+
+// 标签
+model Tag {
+  id          String                @id @default(uuid())
+  name        String
+  slug        String
+  description String?
+  isActive    Boolean               @default(true) @map("is_active")
+  createdAt   TimestamptzString     @default(now()) @map("created_at")
+  updatedAt   temporal.updatedAtString() @map("updated_at")
+  deletedAt   TimestamptzString?    @map("deleted_at")
+
+  @@unique([name])
+  @@unique([slug])
+  @@map("tags")
+}
+
+// 标签别名
+model TagAlias {
+  id          String                @id @default(uuid())
+  aliasName   String                @map("alias_name")
+  tagId       String                @map("tag_id")
+  isActive    Boolean               @default(true) @map("is_active")
+  createdAt   TimestamptzString     @default(now()) @map("created_at")
+  updatedAt   temporal.updatedAtString() @map("updated_at")
+  deletedAt   TimestamptzString?    @map("deleted_at")
+  tag         Tag                   @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@unique([aliasName])
+  @@index([tagId])
+  @@map("tag_aliases")
+}

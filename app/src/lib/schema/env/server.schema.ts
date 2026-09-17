@@ -4,11 +4,15 @@ export const serverEnvSchema = z.object({
     appName: z.string().min(1),
     nodeEnv: z.enum(["development", "production", "test"]),
     isPro: z.boolean(),
+    databaseUrl: z.string().min(1),
 }).transform((data) => ({
     appName: data.appName,
     env: {
         nodeEnv: data.nodeEnv,
         isPro: data.isPro,
+    },
+    datasource: {
+        url:data.databaseUrl
     }
 }))
 
@@ -18,4 +22,5 @@ export const serverEnv = serverEnvSchema.parse({
     appName: process.env.APP_NAME,
     nodeEnv: process.env.NODE_ENV,
     isPro: process.env.NODE_ENV === "production",
+    databaseUrl: process.env.DATABASE_URL,
 });
