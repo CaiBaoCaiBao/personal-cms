@@ -10,8 +10,8 @@
     "lint": "eslint",
     "shadcn:add": "pnpm dlx shadcn@latest add",
     "contract:emit": "prisma contract emit",
-    "test":"vitest",
-    "db:update":"prisma db update"
+    "test": "vitest",
+    "db:update": "prisma db update"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -22,6 +22,7 @@
     "dotenv": "^17.4.2",
     "lucide-react": "^1.46.0",
     "next": "16.3.5",
+    "pg": "^8.23.0",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "shadcn": "^4.21.0",
@@ -32,6 +33,7 @@
     "@prisma/cli-engine": "0.4.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
+    "@types/pg": "^8.23.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",

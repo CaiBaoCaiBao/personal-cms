@@ -385,7 +385,8 @@
                 {
                   "columns": [
                     "name",
-                    "parent_id"
+                    "parent_id",
+                    "deleted_at"
                   ]
                 }
               ]
@@ -458,6 +459,15 @@
               "indexes": [
                 {
                   "columns": [
+                    "tag_id",
+                    "deleted_at"
+                  ],
+                  "name": "tag_aliases_tag_id_deleted_at_idx_9da4b342",
+                  "prefix": "tag_aliases_tag_id_deleted_at_idx",
+                  "unique": false
+                },
+                {
+                  "columns": [
                     "tag_id"
                   ],
                   "name": "tag_aliases_tag_id_idx_94b47830",
@@ -473,7 +483,8 @@
               "uniques": [
                 {
                   "columns": [
-                    "alias_name"
+                    "alias_name",
+                    "deleted_at"
                   ]
                 }
               ]
@@ -539,12 +550,14 @@
               "uniques": [
                 {
                   "columns": [
-                    "name"
+                    "name",
+                    "deleted_at"
                   ]
                 },
                 {
                   "columns": [
-                    "slug"
+                    "slug",
+                    "deleted_at"
                   ]
                 }
               ]
@@ -555,7 +568,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "87fe52a34f64e5e88b403ab506f1a0c5996f561436f102b2dc94fde1b6b43a6f"
+    "storageHash": "cbc318e5dcb298f0d343c25aca7383679da390f4d35c0205c7092b11de0159d8"
   },
   "execution": {
     "executionHash": "aab83d2922d720888a47b6b33a78a297cbaa6055c08092ca3b49001a5b958e49",

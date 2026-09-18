@@ -13,7 +13,7 @@ model Category {
   updatedAt   temporal.updatedAtString() @map("updated_at")
   deletedAt   TimestamptzString?    @map("deleted_at")
 
-  @@unique([name, parentId])
+  @@unique([name, parentId,deletedAt])
   @@index([parentId])
   @@map("categories")
 }
@@ -29,8 +29,8 @@ model Tag {
   updatedAt   temporal.updatedAtString() @map("updated_at")
   deletedAt   TimestamptzString?    @map("deleted_at")
 
-  @@unique([name])
-  @@unique([slug])
+  @@unique([name,deletedAt])
+  @@unique([slug,deletedAt])
   @@map("tags")
 }
 
@@ -45,7 +45,7 @@ model TagAlias {
   deletedAt   TimestamptzString?    @map("deleted_at")
   tag         Tag                   @relation(fields: [tagId], references: [id], onDelete: Cascade)
 
-  @@unique([aliasName])
-  @@index([tagId])
+  @@unique([aliasName,deletedAt])
+  @@index([tagId,deletedAt])
   @@map("tag_aliases")
 }
