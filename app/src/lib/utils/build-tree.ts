@@ -33,3 +33,27 @@ export function buildTree<T extends TreeNodeBase>(
   }
   return roots;
 }
+
+type FilterableTreeNode<T> = T & { children?: FilterableTreeNode<T>[] };
+
+/**
+ * 按谓词过滤树：自身命中则保留整棵子树；仅后代命中则保留祖先路径。
+ */
+export function filterTree<T>(
+  nodes: FilterableTreeNode<T>[],
+  predicate: (node: FilterableTreeNode<T>) => boolean,
+): FilterableTreeNode<T>[] {
+  const result: FilterableTreeNode<T>[] = [];
+  for (const node of nodes) {
+    const children = node.children ?? [];
+    if (predicate(node)) {
+      result.push(node);
+      continue;
+    }
+    const filteredChildren = filterTree(children, predicate);
+    if (filteredChildren.length > 0) {
+      result.push({ ...node, children: filteredChildren });
+    }
+  }
+  return result;
+}

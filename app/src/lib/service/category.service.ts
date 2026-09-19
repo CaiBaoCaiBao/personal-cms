@@ -8,11 +8,7 @@ import {
     NotFoundError,
     ValidationError,
 } from "@/lib/utils";
-import type {
-    CategoryInputPO,
-    CategoryTreeItemDTO,
-    CategoryTreeNodeBO,
-} from "@/type/category.type";
+import type { CategoryInputPO } from "@/type/category.type";
 import { buildTree } from "@/lib/utils";
 
 /**
@@ -63,33 +59,11 @@ export class CategoryService {
         const tree = buildTree(list);
         return tree;
     }
-    /** @description 删除分类 */
+    /** @description 删除分类（级联软删全部后代） */
     static async remove(id: string) {
-        const current = await CategoryDao.findById(id);
-        if (!current) throw new NotFoundError("分类不存在");
-        const list = await CategoryDao.findAllForList();
-        const nodes = this.collectSelfAndDescendants(id, list);
+        const nodes = await CategoryDao.findSelfAndDescendantIds(id);
+        if (nodes.length === 0) throw new NotFoundError("分类不存在");
         await CategoryDao.delete(nodes);
-    }
-    /** @description 收集自身及其子分类 */
-    private static collectSelfAndDescendants(
-        nodeId: string, list: { id: string, parentId: string }[]
-    ): string[] {
-        const childrenOf = new Map<string, string[]>();
-        for (const r of list) {
-            if (!r.parentId) continue;
-            const bucket = childrenOf.get(r.parentId) ?? [];
-            bucket.push(r.id);
-            childrenOf.set(r.parentId, bucket);
-        }
-        const result: string[] = [];
-        const stack = [nodeId];
-        while (stack.length) {
-            const cur = stack.pop()!;
-            result.push(cur);
-            for (const child of childrenOf.get(cur) ?? []) stack.push(child);
-        }
-        return result;
     }
     /** @description 将DTO转换为PO */
     private static Dto2Po(dto: SaveCategoryDTO): CategoryInputPO {

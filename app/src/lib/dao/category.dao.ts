@@ -46,19 +46,39 @@ export class CategoryDao {
             throw mapPrismaError(e);
         }
     }
-    /** @description 删除分类 */
-    static async delete(nodes: string[]) {
+    /** @description 递归收集自身及全部未删除后代 id */
+    static async findSelfAndDescendantIds(id: string) {
         try {
-            await db.transaction(async (tx) => {
-                for (const node of nodes) {
-                    await tx.orm.public.Category.where({
-                        deletedAt: null,
-                        id: node,
-                    }).update({
-                        deletedAt: new Date().toISOString(),
-                    })
-                }
-            })
+            const plan = db.raw.sql`
+                WITH RECURSIVE subtree AS (
+                    SELECT id
+                    FROM categories
+                    WHERE id = ${id}
+                      AND deleted_at IS NULL
+                    UNION ALL
+                    SELECT c.id
+                    FROM categories c
+                    INNER JOIN subtree s ON c.parent_id = s.id
+                    WHERE c.deleted_at IS NULL
+                )
+                SELECT id FROM subtree
+            `.returnsRow({ id: "pg/text@1" }).build();
+            const rows = await db.runtime().query(plan);
+            return rows.map((row) => row.id);
+        } catch (e) {
+            if (e instanceof AppError) throw e;
+            throw mapPrismaError(e);
+        }
+    }
+    /** @description 按 id 批量软删 */
+    static async delete(ids: string[]) {
+        if (ids.length === 0) return;
+        try {
+            const deletedAt = new Date().toISOString();
+            await db.orm.public.Category
+                .where((c) => c.deletedAt.isNull())
+                .where((c) => c.id.in(ids))
+                .update({ deletedAt });
         } catch (e) {
             if (e instanceof AppError) throw e;
             throw mapPrismaError(e);

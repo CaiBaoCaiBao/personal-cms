@@ -17,6 +17,7 @@
     "@base-ui/react": "^1.8.0",
     "@mdxeditor/editor": "^4.2.5",
     "@prisma/orm-postgres": "8.0.0-rc.11",
+    "@tanstack/react-query": "^5.103.1",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.3.0",
     "dotenv": "^17.4.2",

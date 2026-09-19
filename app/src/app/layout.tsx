@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "../style/globals.css";
 import { serverEnvConfig } from "@/config/server-env.config";
-import { TooltipProvider } from "@/components/ui/tooltip"
+import { TooltipProvider } from "@/components/ui/tooltip";
+import {QueryClientProvider} from "@tanstack/react-query";
+import { getQueryClient } from "@/lib/utils/get-client-query";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,15 +24,18 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
+  const queryClient = getQueryClient();
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body>
-        <TooltipProvider>
-          {children}
-        </TooltipProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            {children}
+          </TooltipProvider>
+        </QueryClientProvider>
       </body>
     </html>
   );
