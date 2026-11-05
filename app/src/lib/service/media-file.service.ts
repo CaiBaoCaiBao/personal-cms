@@ -20,7 +20,7 @@ export class MediaFileService {
     ): Promise<string> {
         const existedFile = await MediaFileDao.queryByHash(hash);
         if (existedFile) {
-            throw new ConflictError("MEDIA", "Media file already exists");
+            throw new ConflictError("MEDIA", "Media file content already exists");
         }
         const options: qiniuRs.PutPolicyOptions = {
             scope: this.bucket + ":" + key,
