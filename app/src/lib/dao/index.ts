@@ -1,3 +1,3 @@
 import "server-only";
 
-export { MediaDao } from "./media.dao";
+export { MediaFileDao } from "./media-file.dao";

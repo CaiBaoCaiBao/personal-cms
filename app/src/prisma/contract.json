@@ -4,8 +4,8 @@
   "target": "postgres",
   "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
-    "media": {
-      "model": "Media",
+    "media_file": {
+      "model": "MediaFile",
       "namespace": "public"
     }
   },
@@ -13,7 +13,7 @@
     "namespaces": {
       "public": {
         "models": {
-          "Media": {
+          "MediaFile": {
             "fields": {
               "createdAt": {
                 "nullable": false,
@@ -23,7 +23,7 @@
                 }
               },
               "durationMs": {
-                "nullable": false,
+                "nullable": true,
                 "type": {
                   "codecId": "pg/int4@1",
                   "kind": "scalar"
@@ -43,7 +43,7 @@
                   "kind": "scalar"
                 }
               },
-              "name": {
+              "originalName": {
                 "nullable": false,
                 "type": {
                   "codecId": "pg/text@1",
@@ -87,8 +87,8 @@
                 "mimeType": {
                   "column": "mime_type"
                 },
-                "name": {
-                  "column": "name"
+                "originalName": {
+                  "column": "original_name"
                 },
                 "size": {
                   "column": "size"
@@ -101,7 +101,7 @@
                 }
               },
               "namespaceId": "public",
-              "table": "media"
+              "table": "media_file"
             }
           }
         }
@@ -113,7 +113,7 @@
       "public": {
         "entries": {
           "table": {
-            "media": {
+            "media_file": {
               "columns": {
                 "created_at": {
                   "codecId": "pg/timestamptz-string@1",
@@ -127,7 +127,7 @@
                 "duration_ms": {
                   "codecId": "pg/int4@1",
                   "dataType": "pg/int4",
-                  "nullable": false
+                  "nullable": true
                 },
                 "id": {
                   "codecId": "pg/text@1",
@@ -139,7 +139,7 @@
                   "dataType": "pg/text",
                   "nullable": false
                 },
-                "name": {
+                "original_name": {
                   "codecId": "pg/text@1",
                   "dataType": "pg/text",
                   "nullable": false
@@ -181,10 +181,10 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "1ca9ac18b4d2334c80076527f23e145d8879811603f924526df27d29f9ce314f"
+    "storageHash": "7490914447820674f3f736d4538ef39a1ed85ecab1e647526ac3d67da847dcb8"
   },
   "execution": {
-    "executionHash": "57509093aebffac7275b7a1b25debf284960018f34b6cb42eecbf059592e48a9",
+    "executionHash": "8287f88de006cf9376e23396cc35fd1e87f787842ae470ccba7eb47586219845",
     "mutations": {
       "defaults": [
         {
@@ -193,7 +193,7 @@
             "kind": "generator"
           },
           "ref": {
-            "entry": "media",
+            "entry": "media_file",
             "field": "id",
             "namespace": "public"
           }

@@ -4,10 +4,10 @@ import { db } from "@/prisma/db";
 import { mapPrismaError } from "../errors/map-prisma-error";
 import { PaginationQuery } from "@/types/globals.type";
 
-type MediaInputFields = FieldInputTypes["public"]["Media"];
+type MediaFileInputFields = FieldInputTypes["public"]["MediaFile"];
 
-export type MediaInput = Pick<MediaInputFields,
-    | "name"
+export type MediaFileInput = Pick<MediaFileInputFields,
+    | "originalName"
     | "url"
     | "mimeType"
     | "size"
@@ -15,26 +15,26 @@ export type MediaInput = Pick<MediaInputFields,
     | "storageKey"
 >;
 
-export type MediaQuery = Pick<MediaInputFields,
-    | "name"
+export type MediaFileQuery = Pick<MediaFileInputFields,
+    | "originalName"
     | "mimeType"
     | "createdAt"
 >
 
-export class MediaDao {
+export class MediaFileDao {
     /** @description 插入媒体数据 */
-    static async insert(data: MediaInput): Promise<void> {
+    static async insert(data: MediaFileInput): Promise<void> {
         try {
-            await db.orm.public.Media.create(data);
+            await db.orm.public.MediaFile.create(data);
         } catch (error) {
             throw mapPrismaError(error, "MEDIA");
         }
     }
 
     /** @description 更新媒体数据 */
-    static async update(id: string, data: Partial<MediaInput>): Promise<void> {
+    static async update(id: string, data: Partial<MediaFileInput>): Promise<void> {
         try {
-            await db.orm.public.Media.where({
+            await db.orm.public.MediaFile.where({
                 id
             }).update(data);
         } catch (error) {
@@ -44,11 +44,11 @@ export class MediaDao {
 
     /** @description 查询媒体数据 */
     static async query(
-        query: Partial<MediaQuery>,
+        query: Partial<MediaFileQuery>,
         pagination: PaginationQuery
     ) {
         try {
-            await db.orm.public.Media
+            await db.orm.public.MediaFile
                 .where(query)
                 .offset((pagination.pageIndex) * pagination.pageSize)
                 .limit(pagination.pageSize)
@@ -61,7 +61,7 @@ export class MediaDao {
     /** @description 根据存储键查询媒体数据 */
     static async queryByStorageKey(storageKey: string) {
         try {
-            const row = await db.orm.public.Media.where({ storageKey }).first();
+            const row = await db.orm.public.MediaFile.where({ storageKey }).first();
             return row;
         } catch (error) {
             throw mapPrismaError(error, "MEDIA");
@@ -71,7 +71,7 @@ export class MediaDao {
     /** @description 删除媒体数据 */
     static async delete(id: string): Promise<void> {
         try {
-            await db.orm.public.Media.where({ id }).delete();
+            await db.orm.public.MediaFile.where({ id }).delete();
         } catch (error) {
             throw mapPrismaError(error, "MEDIA");
         }

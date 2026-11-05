@@ -23,9 +23,9 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'1ca9ac18b4d2334c80076527f23e145d8879811603f924526df27d29f9ce314f'>;
+  StorageHashBase<'7490914447820674f3f736d4538ef39a1ed85ecab1e647526ac3d67da847dcb8'>;
 export type ExecutionHash =
-  ExecutionHashBase<'57509093aebffac7275b7a1b25debf284960018f34b6cb42eecbf059592e48a9'>;
+  ExecutionHashBase<'8287f88de006cf9376e23396cc35fd1e87f787842ae470ccba7eb47586219845'>;
 export type ProfileHash =
   ProfileHashBase<'3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2'>;
 
@@ -309,22 +309,22 @@ export type StorageColumnInputTypes = ColumnTypesFromStorage<
 >;
 
 export namespace Models {
-  export type public_Media = {
-    createdAt: FieldOutputTypes['public']['Media']['createdAt'];
-    durationMs: FieldOutputTypes['public']['Media']['durationMs'];
-    id: FieldOutputTypes['public']['Media']['id'];
-    mimeType: FieldOutputTypes['public']['Media']['mimeType'];
-    name: FieldOutputTypes['public']['Media']['name'];
-    size: FieldOutputTypes['public']['Media']['size'];
-    storageKey: FieldOutputTypes['public']['Media']['storageKey'];
-    url: FieldOutputTypes['public']['Media']['url'];
+  export type public_MediaFile = {
+    createdAt: FieldOutputTypes['public']['MediaFile']['createdAt'];
+    durationMs: FieldOutputTypes['public']['MediaFile']['durationMs'];
+    id: FieldOutputTypes['public']['MediaFile']['id'];
+    mimeType: FieldOutputTypes['public']['MediaFile']['mimeType'];
+    originalName: FieldOutputTypes['public']['MediaFile']['originalName'];
+    size: FieldOutputTypes['public']['MediaFile']['size'];
+    storageKey: FieldOutputTypes['public']['MediaFile']['storageKey'];
+    url: FieldOutputTypes['public']['MediaFile']['url'];
     readonly [RelationKeys]?: never;
   };
 }
 
 export declare const models: {
   public: {
-    Media: Models.public_Media;
+    MediaFile: Models.public_MediaFile;
   };
 };
 
@@ -346,7 +346,7 @@ type ContractBase = Omit<
         readonly kind: 'postgres-schema';
         readonly entries: {
           readonly table: {
-            readonly media: {
+            readonly media_file: {
               columns: {
                 readonly created_at: {
                   readonly dataType: 'pg/timestamptz';
@@ -358,7 +358,7 @@ type ContractBase = Omit<
                 readonly duration_ms: {
                   readonly dataType: 'pg/int4';
                   readonly codecId: 'pg/int4@1';
-                  readonly nullable: false;
+                  readonly nullable: true;
                   readonly many: false;
                 };
                 readonly id: {
@@ -373,7 +373,7 @@ type ContractBase = Omit<
                   readonly nullable: false;
                   readonly many: false;
                 };
-                readonly name: {
+                readonly original_name: {
                   readonly dataType: 'pg/text';
                   readonly codecId: 'pg/text@1';
                   readonly nullable: false;
@@ -414,13 +414,16 @@ type ContractBase = Omit<
   readonly target: 'postgres';
   readonly targetFamily: 'sql';
   readonly roots: {
-    readonly media: { readonly namespace: 'public' & NamespaceId; readonly model: 'Media' };
+    readonly media_file: {
+      readonly namespace: 'public' & NamespaceId;
+      readonly model: 'MediaFile';
+    };
   };
   readonly domain: {
     readonly namespaces: {
       readonly public: {
         readonly models: {
-          readonly Media: {
+          readonly MediaFile: {
             readonly fields: {
               readonly createdAt: {
                 readonly nullable: false;
@@ -430,7 +433,7 @@ type ContractBase = Omit<
                 };
               };
               readonly durationMs: {
-                readonly nullable: false;
+                readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
               readonly id: {
@@ -441,7 +444,7 @@ type ContractBase = Omit<
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
-              readonly name: {
+              readonly originalName: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
               };
@@ -460,14 +463,14 @@ type ContractBase = Omit<
             };
             readonly relations: Record<string, never>;
             readonly storage: {
-              readonly table: 'media';
+              readonly table: 'media_file';
               readonly namespaceId: 'public';
               readonly fields: {
                 readonly createdAt: { readonly column: 'created_at' };
                 readonly durationMs: { readonly column: 'duration_ms' };
                 readonly id: { readonly column: 'id' };
                 readonly mimeType: { readonly column: 'mime_type' };
-                readonly name: { readonly column: 'name' };
+                readonly originalName: { readonly column: 'original_name' };
                 readonly size: { readonly column: 'size' };
                 readonly storageKey: { readonly column: 'storage_key' };
                 readonly url: { readonly column: 'url' };
@@ -513,7 +516,7 @@ type ContractBase = Omit<
         {
           readonly onCreate: { readonly id: 'uuidv7'; readonly kind: 'generator' };
           readonly ref: {
-            readonly entry: 'media';
+            readonly entry: 'media_file';
             readonly field: 'id';
             readonly namespace: 'public';
           };

@@ -1,3 +1,3 @@
 import "server-only";
 
-import { MediaService } from "./media.service";
+export { MediaFileService } from "./media-file.service";
