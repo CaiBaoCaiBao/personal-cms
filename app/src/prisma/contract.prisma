@@ -6,6 +6,7 @@ model MediaFile {
   originalName String @map("original_name")
   url String
   storageKey String @unique @map("storage_key")
+  hash String
   mimeType String @map("mime_type")
   size Int
   durationMs Int? @map("duration_ms")

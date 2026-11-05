@@ -1,3 +1,3 @@
 import "server-only";
 
-export { MediaFileDao } from "./media-file.dao";
+export { MediaFileDao, type MediaFileInput, type MediaFileQuery } from "./media-file.dao";

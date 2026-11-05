@@ -9,6 +9,7 @@ type MediaFileInputFields = FieldInputTypes["public"]["MediaFile"];
 export type MediaFileInput = Pick<MediaFileInputFields,
     | "originalName"
     | "url"
+    | "hash"
     | "mimeType"
     | "size"
     | "durationMs"
@@ -62,6 +63,16 @@ export class MediaFileDao {
     static async queryByStorageKey(storageKey: string) {
         try {
             const row = await db.orm.public.MediaFile.where({ storageKey }).first();
+            return row;
+        } catch (error) {
+            throw mapPrismaError(error, "MEDIA");
+        }
+    }
+
+    /** @description 根据哈希查询媒体数据 */
+    static async queryByHash(hash: string) {
+        try {
+            const row = await db.orm.public.MediaFile.where({ hash }).first();
             return row;
         } catch (error) {
             throw mapPrismaError(error, "MEDIA");

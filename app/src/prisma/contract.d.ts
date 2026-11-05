@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'7490914447820674f3f736d4538ef39a1ed85ecab1e647526ac3d67da847dcb8'>;
+  StorageHashBase<'d03c9a10c3ac91f836c8daeeea4c144af6ae510476477356faf63b4203031d44'>;
 export type ExecutionHash =
   ExecutionHashBase<'8287f88de006cf9376e23396cc35fd1e87f787842ae470ccba7eb47586219845'>;
 export type ProfileHash =
@@ -312,6 +312,7 @@ export namespace Models {
   export type public_MediaFile = {
     createdAt: FieldOutputTypes['public']['MediaFile']['createdAt'];
     durationMs: FieldOutputTypes['public']['MediaFile']['durationMs'];
+    hash: FieldOutputTypes['public']['MediaFile']['hash'];
     id: FieldOutputTypes['public']['MediaFile']['id'];
     mimeType: FieldOutputTypes['public']['MediaFile']['mimeType'];
     originalName: FieldOutputTypes['public']['MediaFile']['originalName'];
@@ -359,6 +360,12 @@ type ContractBase = Omit<
                   readonly dataType: 'pg/int4';
                   readonly codecId: 'pg/int4@1';
                   readonly nullable: true;
+                  readonly many: false;
+                };
+                readonly hash: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: false;
                   readonly many: false;
                 };
                 readonly id: {
@@ -436,6 +443,10 @@ type ContractBase = Omit<
                 readonly nullable: true;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/int4@1' };
               };
+              readonly hash: {
+                readonly nullable: false;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly id: {
                 readonly nullable: false;
                 readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
@@ -468,6 +479,7 @@ type ContractBase = Omit<
               readonly fields: {
                 readonly createdAt: { readonly column: 'created_at' };
                 readonly durationMs: { readonly column: 'duration_ms' };
+                readonly hash: { readonly column: 'hash' };
                 readonly id: { readonly column: 'id' };
                 readonly mimeType: { readonly column: 'mime_type' };
                 readonly originalName: { readonly column: 'original_name' };

@@ -1,7 +1,9 @@
 import "server-only";
 import { serverEnvConfig } from "@/config/server-env.config";
-import qiniu from "qiniu";
-import { rs as qiniuRs } from "qiniu";
+import qiniu, { rs as qiniuRs } from "qiniu";
+import { MediaFileDTO } from "@/lib/schema/media/media-file.schema";
+import { MediaFileDao, type MediaFileInput } from "../dao";
+import { ConflictError } from "../errors";
 
 export class MediaFileService {
     static readonly ak = serverEnvConfig.qiniu.accessKey;
@@ -13,9 +15,14 @@ export class MediaFileService {
     /** @description 生成上传凭证 */
     static async generateUploadToken(
         key: string,
+        hash: string,
         expires: number = 3600
     ): Promise<string> {
-        const options:qiniuRs.PutPolicyOptions = {
+        const existedFile = await MediaFileDao.queryByHash(hash);
+        if (existedFile) {
+            throw new ConflictError("MEDIA", "Media file already exists");
+        }
+        const options: qiniuRs.PutPolicyOptions = {
             scope: this.bucket + ":" + key,
             expires: expires,
             returnBody: '{"key":"$(key)","hash":"$(etag)","size":$(fsize)}',
@@ -23,4 +30,18 @@ export class MediaFileService {
         const putPolicy = new qiniu.rs.PutPolicy(options);
         return putPolicy.uploadToken(this.mc);
     }
+
+    static async create(dto: MediaFileDTO): Promise<void> {
+        const existedPath = await MediaFileDao.queryByStorageKey(dto.storageKey);
+        if (existedPath) {
+            throw new ConflictError("MEDIA", "Media file path already exists");
+        }
+        const data: MediaFileInput = {
+            ...dto,
+            url:this.domain + "/" + dto.storageKey,
+        }
+        await MediaFileDao.insert(data);
+    }
+
+
 }
