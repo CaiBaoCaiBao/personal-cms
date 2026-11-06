@@ -13,3 +13,5 @@ export type PaginationResponse<T> = {
     pageIndex: number;
     pageSize: number;
 };
+
+export type MatchModule = | "exact" | "prefix" | "regex" | "contain";
