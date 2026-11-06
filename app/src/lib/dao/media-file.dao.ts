@@ -3,6 +3,7 @@ import { FieldInputTypes } from "@/prisma/contract";
 import { db } from "@/prisma/db";
 import { mapPrismaError } from "../errors/map-prisma-error";
 import { PaginationQuery } from "@/types/globals.type";
+import { NotFoundError } from "../errors";
 
 type MediaFileInputFields = FieldInputTypes["public"]["MediaFile"];
 
@@ -80,9 +81,11 @@ export class MediaFileDao {
     }
 
     /** @description 删除媒体数据 */
-    static async delete(id: string): Promise<void> {
+    static async delete(id: string): Promise<string> {
         try {
-            await db.orm.public.MediaFile.where({ id }).delete();
+            const row = await db.orm.public.MediaFile.where({ id }).delete();
+            if (!row) throw new NotFoundError("MEDIA", "Media file not found");
+            return row.storageKey;
         } catch (error) {
             throw mapPrismaError(error, "MEDIA");
         }

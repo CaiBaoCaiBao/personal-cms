@@ -31,6 +31,7 @@ export class MediaFileService {
         return putPolicy.uploadToken(this.mc);
     }
 
+    /** @description 创建媒体文件 */
     static async create(dto: MediaFileDTO): Promise<void> {
         const existedPath = await MediaFileDao.queryByStorageKey(dto.storageKey);
         if (existedPath) {
@@ -43,5 +44,9 @@ export class MediaFileService {
         await MediaFileDao.insert(data);
     }
 
-
+    static async remove(id: string): Promise<void>{
+        const storageKey = await MediaFileDao.delete(id);
+        
+        
+    }
 }

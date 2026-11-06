@@ -1,6 +1,7 @@
 import { createReadStream } from "fs";
 import { Readable } from "stream";
 import crypto from "crypto";
+import qiniu from "qiniu";
 
 type ReturnBody = {
     key: string;
@@ -206,5 +207,18 @@ export class Qiniu {
             });
         }
         return body;
+    }
+
+    /** @description 从七牛删除文件 */
+    static async removeFromQiniu(mc: qiniu.auth.digest.Mac, bucket: string, storageKey: string) {
+        const config = new qiniu.conf.Config();
+        config.zone = qiniu.zone.Zone_z2;
+        const bucketManager = new qiniu.rs.BucketManager(mc, config);
+        const result = await bucketManager.delete(bucket, storageKey);
+        const status = result.resp.statusCode;
+        if (status === 612) return;
+        if (!result.ok()) {
+            throw new QiniuUploadError(result.data?.error || "删除七牛文件失败", { status });
+        }
     }
 }
