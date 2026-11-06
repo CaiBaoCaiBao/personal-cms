@@ -66,7 +66,7 @@ export class Qiniu {
     static getEtag(
         input: Buffer | string | Readable,
         callback: (error: Error | null, etag: string) => void
-    ) {
+    ): void {
         const blockSize = 4 * 1024 * 1024;
         const blockHashes: Buffer[] = [];
         let blockCount = 0;
@@ -156,7 +156,7 @@ export class Qiniu {
     }
 
     /** @description 构建对象键 */
-    static buildObjectKey(id: string, filename: string) {
+    static buildObjectKey(id: string, filename: string): string {
         const now = new Date();
         const yyyy = String(now.getFullYear());
         const mm = String(now.getMonth() + 1).padStart(2, "0");
@@ -210,7 +210,7 @@ export class Qiniu {
     }
 
     /** @description 从七牛删除文件 */
-    static async removeFromQiniu(mc: qiniu.auth.digest.Mac, bucket: string, storageKey: string) {
+    static async removeFromQiniu(mc: qiniu.auth.digest.Mac, bucket: string, storageKey: string): Promise<void> {
         const config = new qiniu.conf.Config();
         config.zone = qiniu.zone.Zone_z2;
         const bucketManager = new qiniu.rs.BucketManager(mc, config);
@@ -220,5 +220,6 @@ export class Qiniu {
         if (!result.ok()) {
             throw new QiniuUploadError(result.data?.error || "删除七牛文件失败", { status });
         }
+        return;
     }
 }

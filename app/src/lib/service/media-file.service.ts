@@ -2,8 +2,10 @@ import "server-only";
 import { serverEnvConfig } from "@/config/server-env.config";
 import qiniu, { rs as qiniuRs } from "qiniu";
 import { MediaFileDTO } from "@/lib/schema/media/media-file.schema";
-import { MediaFileDao, type MediaFileInput } from "../dao";
+import { MediaFileDao, MediaFileQuery, type MediaFileInput } from "../dao";
 import { ConflictError } from "../errors";
+import { MediaFileList } from "@/types/media.type";
+import { PaginationQuery, PaginationResponse } from "@/types/globals.type";
 
 export class MediaFileService {
     static readonly ak = serverEnvConfig.qiniu.accessKey;
@@ -39,14 +41,27 @@ export class MediaFileService {
         }
         const data: MediaFileInput = {
             ...dto,
-            url:this.domain + "/" + dto.storageKey,
+            url: this.domain + "/" + dto.storageKey,
         }
         await MediaFileDao.insert(data);
     }
 
-    static async remove(id: string): Promise<void>{
+    /** @description 删除媒体文件 */
+    static async remove(id: string): Promise<string> {
         const storageKey = await MediaFileDao.delete(id);
-        
-        
+        return storageKey;
+    }
+
+    static async pagination(
+        dto: Partial<MediaFileQuery> = {},
+        page: PaginationQuery
+    ): Promise<PaginationResponse<MediaFileList>> {
+        const { list, total } = await MediaFileDao.query(dto, page);
+        return {
+            data: list,
+            total,
+            pageIndex: page.pageIndex,
+            pageSize: page.pageSize,
+        }
     }
 }

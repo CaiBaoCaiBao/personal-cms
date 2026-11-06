@@ -4,6 +4,7 @@ import { db } from "@/prisma/db";
 import { mapPrismaError } from "../errors/map-prisma-error";
 import { PaginationQuery } from "@/types/globals.type";
 import { NotFoundError } from "../errors";
+import { mediaFileListFields, type MediaFileList } from "@/types/media.type";
 
 type MediaFileInputFields = FieldInputTypes["public"]["MediaFile"];
 
@@ -20,8 +21,14 @@ export type MediaFileInput = Pick<MediaFileInputFields,
 export type MediaFileQuery = Pick<MediaFileInputFields,
     | "originalName"
     | "mimeType"
-    | "createdAt"
->
+> & {
+    createdFrom?: MediaFileInputFields["createdAt"];
+    createdTo?: MediaFileInputFields["createdAt"];
+};
+
+function escapeLike(value: string) {
+    return value.replace(/[\\%_]/g, (char) => `\\${char}`);
+}
 
 export class MediaFileDao {
     /** @description 插入媒体数据 */
@@ -48,13 +55,32 @@ export class MediaFileDao {
     static async query(
         query: Partial<MediaFileQuery>,
         pagination: PaginationQuery
-    ) {
+    ): Promise<{ list: MediaFileList[], total: number }> {
+        const filtered = db.orm.public.MediaFile.where((file, { fns }) => {
+            const conditions = [];
+            if (query.originalName) {
+                conditions.push(file.originalName.like(`%${escapeLike(query.originalName)}%`));
+            }
+            if (query.mimeType) {
+                conditions.push(file.mimeType.like(`%${escapeLike(query.mimeType)}%`));
+            }
+            if (query.createdFrom) {
+                conditions.push(file.createdAt.gte(query.createdFrom));
+            }
+            if (query.createdTo) {
+                conditions.push(file.createdAt.lte(query.createdTo));
+            }
+            return conditions.length > 0 ? fns.and(...conditions) : file.id.isNotNull();
+        });
         try {
-            await db.orm.public.MediaFile
-                .where(query)
-                .offset((pagination.pageIndex) * pagination.pageSize)
+            const rows = await filtered
+                .orderBy([(file) => file.createdAt.desc()])
+                .offset(pagination.pageIndex * pagination.pageSize)
                 .limit(pagination.pageSize)
+                .select(...mediaFileListFields)
                 .all();
+            const { total } = await filtered.aggregate((aggregate) => ({ total: aggregate.count() }));
+            return { list: rows, total };
         } catch (error) {
             throw mapPrismaError(error, "MEDIA");
         }
