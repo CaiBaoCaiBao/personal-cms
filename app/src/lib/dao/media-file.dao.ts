@@ -4,7 +4,12 @@ import { db } from "@/prisma/db";
 import { mapPrismaError } from "../errors/map-prisma-error";
 import { PaginationQuery } from "@/types/globals.type";
 import { NotFoundError } from "../errors";
-import { mediaFileListFields, type MediaFileList } from "@/types/media.type";
+import {
+    mediaFileListFields,
+    type MediaFileList,
+    mediaFileDetailFields,
+    type MediaFileDetail
+} from "@/types/media.type";
 
 type MediaFileInputFields = FieldInputTypes["public"]["MediaFile"];
 
@@ -81,6 +86,18 @@ export class MediaFileDao {
                 .all();
             const { total } = await filtered.aggregate((aggregate) => ({ total: aggregate.count() }));
             return { list: rows, total };
+        } catch (error) {
+            throw mapPrismaError(error, "MEDIA");
+        }
+    }
+
+    static async queryById(id: string): Promise<MediaFileDetail | null> {
+        try {
+            const row = await db.orm.public.MediaFile
+                .where({ id })
+                .select(...mediaFileDetailFields)
+                .first();
+            return row;
         } catch (error) {
             throw mapPrismaError(error, "MEDIA");
         }

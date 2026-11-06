@@ -3,8 +3,8 @@ import { serverEnvConfig } from "@/config/server-env.config";
 import qiniu, { rs as qiniuRs } from "qiniu";
 import { MediaFileDTO } from "@/lib/schema/media/media-file.schema";
 import { MediaFileDao, MediaFileQuery, type MediaFileInput } from "../dao";
-import { ConflictError } from "../errors";
-import { MediaFileList } from "@/types/media.type";
+import { ConflictError, NotFoundError } from "../errors";
+import { MediaFileDetail, MediaFileList } from "@/types/media.type";
 import { PaginationQuery, PaginationResponse } from "@/types/globals.type";
 import { createReadStream } from "fs";
 import { Readable } from "stream";
@@ -18,6 +18,50 @@ export class MediaFileService {
     static readonly bucket = serverEnvConfig.qiniu.bucket;
     static readonly mc = new qiniu.auth.digest.Mac(this.ak, this.sk);
 
+    /** @description 创建媒体文件 */
+    static async create(dto: MediaFileDTO): Promise<void> {
+        const existedPath = await MediaFileDao.queryByStorageKey(dto.storageKey);
+        if (existedPath) {
+            throw new ConflictError("MEDIA", "Media file path already exists");
+        }
+        const data: MediaFileInput = {
+            ...dto,
+            url: this.domain + "/" + dto.storageKey,
+        }
+        await MediaFileDao.insert(data);
+    }
+
+    /** @description 删除媒体文件，并从七牛删除文件 */
+    static async remove(id: string): Promise<void> {
+        const storageKey = await MediaFileDao.delete(id);
+        await this.removeFromQiniu(storageKey);
+    }
+
+    /** @description 分页查询媒体文件 */
+    static async pagination(
+        dto: Partial<MediaFileQuery> = {},
+        page: PaginationQuery
+    ): Promise<PaginationResponse<MediaFileList>> {
+        const { list, total } = await MediaFileDao.query(dto, page);
+        return {
+            data: list,
+            total,
+            pageIndex: page.pageIndex,
+            pageSize: page.pageSize,
+        }
+    }
+
+    /** @description 获取媒体文件详情 */
+    static async getItem(id:string): Promise<MediaFileDetail | null> {
+        const item = await MediaFileDao.queryById(id);
+        if(!item) throw new NotFoundError("MEDIA", "Media file not found");
+        return item;
+    }
+
+    // ===============================================
+    // ============ 七牛云操作 ========================
+    // ===============================================
+    
     /** @description 生成上传凭证 */
     static async generateUploadToken(
         key: string,
@@ -36,42 +80,6 @@ export class MediaFileService {
         const putPolicy = new qiniu.rs.PutPolicy(options);
         return putPolicy.uploadToken(this.mc);
     }
-
-    /** @description 创建媒体文件 */
-    static async create(dto: MediaFileDTO): Promise<void> {
-        const existedPath = await MediaFileDao.queryByStorageKey(dto.storageKey);
-        if (existedPath) {
-            throw new ConflictError("MEDIA", "Media file path already exists");
-        }
-        const data: MediaFileInput = {
-            ...dto,
-            url: this.domain + "/" + dto.storageKey,
-        }
-        await MediaFileDao.insert(data);
-    }
-
-    /** @description 删除媒体文件 */
-    static async remove(id: string): Promise<void> {
-        const storageKey = await MediaFileDao.delete(id);
-        await this.removeFromQiniu(storageKey);
-    }
-
-    static async pagination(
-        dto: Partial<MediaFileQuery> = {},
-        page: PaginationQuery
-    ): Promise<PaginationResponse<MediaFileList>> {
-        const { list, total } = await MediaFileDao.query(dto, page);
-        return {
-            data: list,
-            total,
-            pageIndex: page.pageIndex,
-            pageSize: page.pageSize,
-        }
-    }
-
-    // ===============================================
-    // ============ 七牛云操作 ========================
-    // ===============================================
 
     /**
      * @description 按七牛 qetag 计算文件摘要。不超过 4MiB 为 0x16 + SHA-1(全文)；超过 4MiB 时按 4MiB 分块，结果为 0x96 + SHA-1(各块 SHA-1 的拼接)。
