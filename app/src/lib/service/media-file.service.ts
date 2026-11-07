@@ -22,7 +22,7 @@ export class MediaFileService {
     static async create(dto: MediaFileDTO): Promise<void> {
         const existedPath = await MediaFileDao.queryByStorageKey(dto.storageKey);
         if (existedPath) {
-            throw new ConflictError("MEDIA", "Media file path already exists");
+            throw new ConflictError("MEDIA_FILE", "Media file path already exists");
         }
         const data: MediaFileInput = {
             ...dto,
@@ -52,16 +52,16 @@ export class MediaFileService {
     }
 
     /** @description 获取媒体文件详情 */
-    static async getItem(id:string): Promise<MediaFileDetail | null> {
+    static async getItem(id: string): Promise<MediaFileDetail | null> {
         const item = await MediaFileDao.queryById(id);
-        if(!item) throw new NotFoundError("MEDIA", "Media file not found");
+        if (!item) throw new NotFoundError("MEDIA_FILE", "Media file not found");
         return item;
     }
 
     // ===============================================
     // ============ 七牛云操作 ========================
     // ===============================================
-    
+
     /** @description 生成上传凭证 */
     static async generateUploadToken(
         key: string,
@@ -70,7 +70,7 @@ export class MediaFileService {
     ): Promise<string> {
         const existedFile = await MediaFileDao.queryByHash(hash);
         if (existedFile) {
-            throw new ConflictError("MEDIA", "Media file content already exists");
+            throw new ConflictError("MEDIA_FILE", "Media file content already exists");
         }
         const options: qiniuRs.PutPolicyOptions = {
             scope: this.bucket + ":" + key,

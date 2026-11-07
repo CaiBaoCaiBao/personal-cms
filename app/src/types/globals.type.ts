@@ -1,4 +1,9 @@
-export type Module = "MEDIA";
+export type Module =
+    | "MEDIA_FILE"
+    | "CONTENT"
+    | "JSON_CONTENT"
+    | "HTML_CONTENT"
+    | "ARTICLE";
 
 /** @description 分页查询参数 */
 export type PaginationQuery = {

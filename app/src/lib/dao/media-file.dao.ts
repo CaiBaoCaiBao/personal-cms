@@ -41,7 +41,7 @@ export class MediaFileDao {
         try {
             await db.orm.public.MediaFile.create(data);
         } catch (error) {
-            throw mapPrismaError(error, "MEDIA");
+            throw mapPrismaError(error, "MEDIA_FILE");
         }
     }
 
@@ -52,7 +52,7 @@ export class MediaFileDao {
                 id
             }).update(data);
         } catch (error) {
-            throw mapPrismaError(error, "MEDIA");
+            throw mapPrismaError(error, "MEDIA_FILE");
         }
     }
 
@@ -87,10 +87,11 @@ export class MediaFileDao {
             const { total } = await filtered.aggregate((aggregate) => ({ total: aggregate.count() }));
             return { list: rows, total };
         } catch (error) {
-            throw mapPrismaError(error, "MEDIA");
+            throw mapPrismaError(error, "MEDIA_FILE");
         }
     }
 
+    /** @description 根据ID查询媒体数据 */
     static async queryById(id: string): Promise<MediaFileDetail | null> {
         try {
             const row = await db.orm.public.MediaFile
@@ -99,7 +100,7 @@ export class MediaFileDao {
                 .first();
             return row;
         } catch (error) {
-            throw mapPrismaError(error, "MEDIA");
+            throw mapPrismaError(error, "MEDIA_FILE");
         }
     }
 
@@ -109,7 +110,7 @@ export class MediaFileDao {
             const row = await db.orm.public.MediaFile.where({ storageKey }).first();
             return row;
         } catch (error) {
-            throw mapPrismaError(error, "MEDIA");
+            throw mapPrismaError(error, "MEDIA_FILE");
         }
     }
 
@@ -119,7 +120,7 @@ export class MediaFileDao {
             const row = await db.orm.public.MediaFile.where({ hash }).first();
             return row;
         } catch (error) {
-            throw mapPrismaError(error, "MEDIA");
+            throw mapPrismaError(error, "MEDIA_FILE");
         }
     }
 
@@ -127,10 +128,10 @@ export class MediaFileDao {
     static async delete(id: string): Promise<string> {
         try {
             const row = await db.orm.public.MediaFile.where({ id }).delete();
-            if (!row) throw new NotFoundError("MEDIA", "Media file not found");
+            if (!row) throw new NotFoundError("MEDIA_FILE", "Media file not found");
             return row.storageKey;
         } catch (error) {
-            throw mapPrismaError(error, "MEDIA");
+            throw mapPrismaError(error, "MEDIA_FILE");
         }
     }
 }

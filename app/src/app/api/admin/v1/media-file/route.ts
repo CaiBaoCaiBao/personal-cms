@@ -27,7 +27,7 @@ function readParam(searchParams: URLSearchParams, key: string) {
 
 function assertDebugApi() {
     if (serverEnvConfig.node.isPro) {
-        throw new NotFoundError("MEDIA", "MEDIA_FILE_API_NOT_AVAILABLE");
+        throw new NotFoundError("MEDIA_FILE", "MEDIA_FILE_API_NOT_AVAILABLE");
     }
 }
 
@@ -62,6 +62,6 @@ export const GET = async (request: Request) => {
         const result = await MediaFileService.pagination(filter, { pageIndex, pageSize });
         return Response.json(result);
     } catch (error) {
-        return toErrorResponse(toAppError(error, "MEDIA"));
+        return toErrorResponse(toAppError(error, "MEDIA_FILE"));
     }
 };

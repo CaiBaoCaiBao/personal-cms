@@ -1,5 +1,15 @@
 // use prisma-8
 
+enum ContentType {
+  ARTICLE
+  LONG_FORM
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
 
 model MediaFile {
   id String @id @onCreate(uuid(7))
@@ -12,6 +22,54 @@ model MediaFile {
   durationMs Int? @map("duration_ms")
   createdAt TimestamptzString() @default(now()) @map("created_at")
 
+  coverFor Article[] @relation("ArticleCover")
+
   @@index([storageKey])
-  @@map("media_file")
+  @@map("media_files")
+}
+
+model Content {
+  id String @id @onCreate(uuid(7))
+  title String
+  type ContentType
+  status ContentStatus
+  jsonContent JsonContent?
+  htmlContent HtmlContent?
+  createdAt TimestamptzString @default(now())
+  updatedAt temporal.UpdatedAt @map("updated_at")
+  publishedAt TimestamptzString? @map("published_at")
+  archivedAt TimestamptzString? @map("archived_at")
+  deletedAt TimestamptzString? @map("deleted_at")
+
+  @@index([title])
+  @@map("contents")
+}
+
+model JsonContent {
+  contentId String @id @map("content_id")
+  body Json
+  content Content @relation(fields: [contentId], references: [id])
+
+  @@map("json_contents")
+}
+
+model HtmlContent {
+  contentId String @id @map("content_id")
+  body String
+  content Content @relation(fields: [contentId], references: [id])
+
+  @@map("html_contents")
+}
+
+model Article{
+  id String @id @onCreate(uuid(7))
+  slug String @unique
+  coverImgId String? @map("cover_img_id")
+  coverImg MediaFile? @relation("ArticleCover", fields: [coverImgId], references: [id], onDelete: SetNull)
+
+  contentId String @unique @map("content_id")
+  content Content @relation(fields: [contentId], references: [id])
+
+  @@index([coverImgId])
+  @@map("articles")
 }

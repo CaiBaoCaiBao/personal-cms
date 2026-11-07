@@ -4,7 +4,23 @@
   "target": "postgres",
   "profileHash": "3916f444a8a17ad749191acf9e08dad97d1a327b88c2f1d45d12f240296aa8b2",
   "roots": {
-    "media_file": {
+    "articles": {
+      "model": "Article",
+      "namespace": "public"
+    },
+    "contents": {
+      "model": "Content",
+      "namespace": "public"
+    },
+    "html_contents": {
+      "model": "HtmlContent",
+      "namespace": "public"
+    },
+    "json_contents": {
+      "model": "JsonContent",
+      "namespace": "public"
+    },
+    "media_files": {
       "model": "MediaFile",
       "namespace": "public"
     }
@@ -12,7 +28,368 @@
   "domain": {
     "namespaces": {
       "public": {
+        "enum": {
+          "ContentStatus": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "DRAFT",
+                "value": "DRAFT"
+              },
+              {
+                "name": "PUBLISHED",
+                "value": "PUBLISHED"
+              },
+              {
+                "name": "ARCHIVED",
+                "value": "ARCHIVED"
+              }
+            ]
+          },
+          "ContentType": {
+            "codecId": "pg/text@1",
+            "members": [
+              {
+                "name": "ARTICLE",
+                "value": "ARTICLE"
+              },
+              {
+                "name": "LONG_FORM",
+                "value": "LONG_FORM"
+              }
+            ]
+          }
+        },
         "models": {
+          "Article": {
+            "fields": {
+              "contentId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "coverImgId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "slug": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "content": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "contentId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Content",
+                  "namespace": "public"
+                }
+              },
+              "coverImg": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "coverImgId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "MediaFile",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "contentId": {
+                  "column": "content_id"
+                },
+                "coverImgId": {
+                  "column": "cover_img_id"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "slug": {
+                  "column": "slug"
+                }
+              },
+              "namespaceId": "public",
+              "table": "articles"
+            }
+          },
+          "Content": {
+            "fields": {
+              "archivedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "createdAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "deletedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "id": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "publishedAt": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "kind": "scalar"
+                }
+              },
+              "status": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ContentStatus",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "title": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "type": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                },
+                "valueSet": {
+                  "entityKind": "enum",
+                  "entityName": "ContentType",
+                  "namespaceId": "public",
+                  "plane": "domain"
+                }
+              },
+              "updatedAt": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "kind": "scalar",
+                  "typeParams": {
+                    "precision": 3
+                  }
+                }
+              }
+            },
+            "relations": {
+              "htmlContent": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "contentId"
+                  ]
+                },
+                "to": {
+                  "model": "HtmlContent",
+                  "namespace": "public"
+                }
+              },
+              "jsonContent": {
+                "cardinality": "1:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "contentId"
+                  ]
+                },
+                "to": {
+                  "model": "JsonContent",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "archivedAt": {
+                  "column": "archived_at"
+                },
+                "createdAt": {
+                  "column": "createdAt"
+                },
+                "deletedAt": {
+                  "column": "deleted_at"
+                },
+                "id": {
+                  "column": "id"
+                },
+                "publishedAt": {
+                  "column": "published_at"
+                },
+                "status": {
+                  "column": "status"
+                },
+                "title": {
+                  "column": "title"
+                },
+                "type": {
+                  "column": "type"
+                },
+                "updatedAt": {
+                  "column": "updated_at"
+                }
+              },
+              "namespaceId": "public",
+              "table": "contents"
+            }
+          },
+          "HtmlContent": {
+            "fields": {
+              "body": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
+              "contentId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "content": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "contentId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Content",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "body": {
+                  "column": "body"
+                },
+                "contentId": {
+                  "column": "content_id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "html_contents"
+            }
+          },
+          "JsonContent": {
+            "fields": {
+              "body": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/json@1",
+                  "kind": "scalar"
+                }
+              },
+              "contentId": {
+                "nullable": false,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              }
+            },
+            "relations": {
+              "content": {
+                "cardinality": "N:1",
+                "nullable": false,
+                "on": {
+                  "localFields": [
+                    "contentId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Content",
+                  "namespace": "public"
+                }
+              }
+            },
+            "storage": {
+              "fields": {
+                "body": {
+                  "column": "body"
+                },
+                "contentId": {
+                  "column": "content_id"
+                }
+              },
+              "namespaceId": "public",
+              "table": "json_contents"
+            }
+          },
           "MediaFile": {
             "fields": {
               "createdAt": {
@@ -79,7 +456,23 @@
                 }
               }
             },
-            "relations": {},
+            "relations": {
+              "coverFor": {
+                "cardinality": "1:N",
+                "on": {
+                  "localFields": [
+                    "id"
+                  ],
+                  "targetFields": [
+                    "coverImgId"
+                  ]
+                },
+                "to": {
+                  "model": "Article",
+                  "namespace": "public"
+                }
+              }
+            },
             "storage": {
               "fields": {
                 "createdAt": {
@@ -111,7 +504,7 @@
                 }
               },
               "namespaceId": "public",
-              "table": "media_file"
+              "table": "media_files"
             }
           }
         }
@@ -123,7 +516,282 @@
       "public": {
         "entries": {
           "table": {
-            "media_file": {
+            "articles": {
+              "columns": {
+                "content_id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "cover_img_id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "slug": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "articles_cover_img_id_idx_ec210f7b"
+                  },
+                  "onDelete": "setNull",
+                  "source": {
+                    "columns": [
+                      "cover_img_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "articles"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "media_files"
+                  }
+                },
+                {
+                  "index": {
+                    "unique": [
+                      "content_id"
+                    ]
+                  },
+                  "source": {
+                    "columns": [
+                      "content_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "articles"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "contents"
+                  }
+                }
+              ],
+              "indexes": [
+                {
+                  "columns": [
+                    "cover_img_id"
+                  ],
+                  "name": "articles_cover_img_id_idx_ec210f7b",
+                  "prefix": "articles_cover_img_id_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": [
+                {
+                  "columns": [
+                    "slug"
+                  ]
+                },
+                {
+                  "columns": [
+                    "content_id"
+                  ]
+                }
+              ]
+            },
+            "contents": {
+              "checks": [
+                {
+                  "expression": "\"status\" IN ('DRAFT', 'PUBLISHED', 'ARCHIVED')",
+                  "name": "contents_status_check_bc64f66b",
+                  "prefix": "contents_status_check"
+                },
+                {
+                  "expression": "\"type\" IN ('ARTICLE', 'LONG_FORM')",
+                  "name": "contents_type_check_c29c01e1",
+                  "prefix": "contents_type_check"
+                }
+              ],
+              "columns": {
+                "archived_at": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "createdAt": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "default": {
+                    "expression": "now()",
+                    "kind": "function"
+                  },
+                  "nullable": false
+                },
+                "deleted_at": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "published_at": {
+                  "codecId": "pg/timestamptz-string@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": true
+                },
+                "status": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ContentStatus",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "title": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "type": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false,
+                  "valueSet": {
+                    "entityKind": "valueSet",
+                    "entityName": "ContentType",
+                    "namespaceId": "public",
+                    "plane": "storage"
+                  }
+                },
+                "updated_at": {
+                  "codecId": "pg/timestamptz-date@1",
+                  "dataType": "pg/timestamptz",
+                  "nullable": false,
+                  "typeParams": {
+                    "precision": 3
+                  }
+                }
+              },
+              "foreignKeys": [],
+              "indexes": [
+                {
+                  "columns": [
+                    "title"
+                  ],
+                  "name": "contents_title_idx_1c94c7b6",
+                  "prefix": "contents_title_idx",
+                  "unique": false
+                }
+              ],
+              "primaryKey": {
+                "columns": [
+                  "id"
+                ]
+              },
+              "uniques": []
+            },
+            "html_contents": {
+              "columns": {
+                "body": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                },
+                "content_id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "primaryKey": true
+                  },
+                  "source": {
+                    "columns": [
+                      "content_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "html_contents"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "contents"
+                  }
+                }
+              ],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "content_id"
+                ]
+              },
+              "uniques": []
+            },
+            "json_contents": {
+              "columns": {
+                "body": {
+                  "codecId": "pg/json@1",
+                  "dataType": "pg/json",
+                  "nullable": false
+                },
+                "content_id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": false
+                }
+              },
+              "foreignKeys": [
+                {
+                  "index": {
+                    "primaryKey": true
+                  },
+                  "source": {
+                    "columns": [
+                      "content_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "json_contents"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "contents"
+                  }
+                }
+              ],
+              "indexes": [],
+              "primaryKey": {
+                "columns": [
+                  "content_id"
+                ]
+              },
+              "uniques": []
+            },
+            "media_files": {
               "columns": {
                 "created_at": {
                   "codecId": "pg/timestamptz-string@1",
@@ -190,16 +858,33 @@
                 }
               ]
             }
+          },
+          "valueSet": {
+            "ContentStatus": {
+              "kind": "valueSet",
+              "values": [
+                "DRAFT",
+                "PUBLISHED",
+                "ARCHIVED"
+              ]
+            },
+            "ContentType": {
+              "kind": "valueSet",
+              "values": [
+                "ARTICLE",
+                "LONG_FORM"
+              ]
+            }
           }
         },
         "id": "public",
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "d03c9a10c3ac91f836c8daeeea4c144af6ae510476477356faf63b4203031d44"
+    "storageHash": "96567ae4486d0efebeb94dd8716d65b75f8e9922a872abd0aed472fd69b53689"
   },
   "execution": {
-    "executionHash": "8287f88de006cf9376e23396cc35fd1e87f787842ae470ccba7eb47586219845",
+    "executionHash": "3515439acc2cffbf8be70c99b4d7f474b0d35ac92f4b8c4956b40c495ac8e01e",
     "mutations": {
       "defaults": [
         {
@@ -208,7 +893,50 @@
             "kind": "generator"
           },
           "ref": {
-            "entry": "media_file",
+            "entry": "articles",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "contents",
+            "field": "id",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "timestampNow",
+            "kind": "generator",
+            "params": {
+              "precision": 3
+            }
+          },
+          "onUpdate": {
+            "id": "timestampNow",
+            "kind": "generator",
+            "params": {
+              "precision": 3
+            }
+          },
+          "ref": {
+            "entry": "contents",
+            "field": "updated_at",
+            "namespace": "public"
+          }
+        },
+        {
+          "onCreate": {
+            "id": "uuidv7",
+            "kind": "generator"
+          },
+          "ref": {
+            "entry": "media_files",
             "field": "id",
             "namespace": "public"
           }
