@@ -154,6 +154,13 @@
                   "kind": "scalar"
                 }
               },
+              "articleId": {
+                "nullable": true,
+                "type": {
+                  "codecId": "pg/text@1",
+                  "kind": "scalar"
+                }
+              },
               "createdAt": {
                 "nullable": false,
                 "type": {
@@ -227,6 +234,22 @@
               }
             },
             "relations": {
+              "article": {
+                "cardinality": "N:1",
+                "nullable": true,
+                "on": {
+                  "localFields": [
+                    "articleId"
+                  ],
+                  "targetFields": [
+                    "id"
+                  ]
+                },
+                "to": {
+                  "model": "Article",
+                  "namespace": "public"
+                }
+              },
               "htmlContent": {
                 "cardinality": "1:1",
                 "nullable": true,
@@ -264,6 +287,9 @@
               "fields": {
                 "archivedAt": {
                   "column": "archived_at"
+                },
+                "articleId": {
+                  "column": "article_id"
                 },
                 "createdAt": {
                   "column": "createdAt"
@@ -629,6 +655,11 @@
                   "dataType": "pg/timestamptz",
                   "nullable": true
                 },
+                "article_id": {
+                  "codecId": "pg/text@1",
+                  "dataType": "pg/text",
+                  "nullable": true
+                },
                 "createdAt": {
                   "codecId": "pg/timestamptz-string@1",
                   "dataType": "pg/timestamptz",
@@ -689,8 +720,36 @@
                   }
                 }
               },
-              "foreignKeys": [],
+              "foreignKeys": [
+                {
+                  "index": {
+                    "name": "contents_article_id_idx_fafef5f5"
+                  },
+                  "source": {
+                    "columns": [
+                      "article_id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "contents"
+                  },
+                  "target": {
+                    "columns": [
+                      "id"
+                    ],
+                    "namespaceId": "public",
+                    "tableName": "articles"
+                  }
+                }
+              ],
               "indexes": [
+                {
+                  "columns": [
+                    "article_id"
+                  ],
+                  "name": "contents_article_id_idx_fafef5f5",
+                  "prefix": "contents_article_id_idx",
+                  "unique": false
+                },
                 {
                   "columns": [
                     "title"
@@ -881,7 +940,7 @@
         "kind": "postgres-schema"
       }
     },
-    "storageHash": "96567ae4486d0efebeb94dd8716d65b75f8e9922a872abd0aed472fd69b53689"
+    "storageHash": "492ff0316fe0135d801904b28cde21c9cbac9b25f7c6629864e163d76847a9e6"
   },
   "execution": {
     "executionHash": "3515439acc2cffbf8be70c99b4d7f474b0d35ac92f4b8c4956b40c495ac8e01e",

@@ -23,7 +23,7 @@ import type {
 } from '@prisma/orm-postgres/contract/types';
 
 export type StorageHash =
-  StorageHashBase<'96567ae4486d0efebeb94dd8716d65b75f8e9922a872abd0aed472fd69b53689'>;
+  StorageHashBase<'492ff0316fe0135d801904b28cde21c9cbac9b25f7c6629864e163d76847a9e6'>;
 export type ExecutionHash =
   ExecutionHashBase<'3515439acc2cffbf8be70c99b4d7f474b0d35ac92f4b8c4956b40c495ac8e01e'>;
 export type ProfileHash =
@@ -348,6 +348,7 @@ export namespace Models {
   };
   export type public_Content = {
     archivedAt: FieldOutputTypes['public']['Content']['archivedAt'];
+    articleId: FieldOutputTypes['public']['Content']['articleId'];
     createdAt: FieldOutputTypes['public']['Content']['createdAt'];
     deletedAt: FieldOutputTypes['public']['Content']['deletedAt'];
     id: FieldOutputTypes['public']['Content']['id'];
@@ -356,9 +357,10 @@ export namespace Models {
     title: FieldOutputTypes['public']['Content']['title'];
     type: FieldOutputTypes['public']['Content']['type'];
     updatedAt: FieldOutputTypes['public']['Content']['updatedAt'];
+    article: public_Article | null;
     htmlContent: public_HtmlContent | null;
     jsonContent: public_JsonContent | null;
-    readonly [RelationKeys]?: 'htmlContent' | 'jsonContent';
+    readonly [RelationKeys]?: 'article' | 'htmlContent' | 'jsonContent';
   };
   export type public_HtmlContent = {
     body: FieldOutputTypes['public']['HtmlContent']['body'];
@@ -490,6 +492,12 @@ type ContractBase = Omit<
                   readonly nullable: true;
                   readonly many: false;
                 };
+                readonly article_id: {
+                  readonly dataType: 'pg/text';
+                  readonly codecId: 'pg/text@1';
+                  readonly nullable: true;
+                  readonly many: false;
+                };
                 readonly createdAt: {
                   readonly dataType: 'pg/timestamptz';
                   readonly codecId: 'pg/timestamptz-string@1';
@@ -545,13 +553,32 @@ type ContractBase = Omit<
               uniques: readonly [];
               indexes: readonly [
                 {
+                  readonly name: 'contents_article_id_idx_fafef5f5';
+                  readonly prefix: 'contents_article_id_idx';
+                  readonly columns: readonly ['article_id'];
+                  readonly unique: false;
+                },
+                {
                   readonly name: 'contents_title_idx_1c94c7b6';
                   readonly prefix: 'contents_title_idx';
                   readonly columns: readonly ['title'];
                   readonly unique: false;
                 },
               ];
-              foreignKeys: readonly [];
+              foreignKeys: readonly [
+                {
+                  readonly source: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'contents';
+                    readonly columns: readonly ['article_id'];
+                  };
+                  readonly target: {
+                    readonly namespaceId: 'public' & NamespaceId;
+                    readonly tableName: 'articles';
+                    readonly columns: readonly ['id'];
+                  };
+                },
+              ];
             };
             readonly html_contents: {
               columns: {
@@ -787,6 +814,10 @@ type ContractBase = Omit<
                   readonly codecId: 'pg/timestamptz-string@1';
                 };
               };
+              readonly articleId: {
+                readonly nullable: true;
+                readonly type: { readonly kind: 'scalar'; readonly codecId: 'pg/text@1' };
+              };
               readonly createdAt: {
                 readonly nullable: false;
                 readonly type: {
@@ -834,6 +865,18 @@ type ContractBase = Omit<
               };
             };
             readonly relations: {
+              readonly article: {
+                readonly to: {
+                  readonly namespace: 'public' & NamespaceId;
+                  readonly model: 'Article';
+                };
+                readonly cardinality: 'N:1';
+                readonly nullable: true;
+                readonly on: {
+                  readonly localFields: readonly ['articleId'];
+                  readonly targetFields: readonly ['id'];
+                };
+              };
               readonly htmlContent: {
                 readonly to: {
                   readonly namespace: 'public' & NamespaceId;
@@ -864,6 +907,7 @@ type ContractBase = Omit<
               readonly namespaceId: 'public';
               readonly fields: {
                 readonly archivedAt: { readonly column: 'archived_at' };
+                readonly articleId: { readonly column: 'article_id' };
                 readonly createdAt: { readonly column: 'createdAt' };
                 readonly deletedAt: { readonly column: 'deleted_at' };
                 readonly id: { readonly column: 'id' };

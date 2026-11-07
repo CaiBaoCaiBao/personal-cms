@@ -41,6 +41,9 @@ model Content {
   archivedAt TimestamptzString? @map("archived_at")
   deletedAt TimestamptzString? @map("deleted_at")
 
+  articleId String? @map("article_id")
+  article Article? @relation(fields: [articleId], references: [id])
+
   @@index([title])
   @@map("contents")
 }

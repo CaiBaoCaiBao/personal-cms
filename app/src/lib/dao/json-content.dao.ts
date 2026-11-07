@@ -4,7 +4,10 @@ import { FieldInputTypes } from "@/prisma/contract";
 import { mapPrismaError } from "../errors/map-prisma-error";
 
 type JsonContentInputFields = FieldInputTypes["public"]["JsonContent"];
-export type JsonContentInput = Pick<JsonContentInputFields, "body">
+export type JsonContentInput = Pick<JsonContentInputFields,
+    | "contentId"
+    | "body"
+>;
 
 export class JsonContentDao {
 
@@ -34,6 +37,17 @@ export class JsonContentDao {
             await db.orm.public.JsonContent.where({
                 contentId,
             }).delete();
+        } catch (error) {
+            throw mapPrismaError(error, "JSON_CONTENT");
+        }
+    }
+
+    static async findByContentId(contentId: string) {
+        try {
+            const row = await db.orm.public.JsonContent.where({
+                contentId
+            }).first();
+            return row;
         } catch (error) {
             throw mapPrismaError(error, "JSON_CONTENT");
         }
