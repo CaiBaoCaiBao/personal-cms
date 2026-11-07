@@ -10,6 +10,7 @@ import {
     mediaFileDetailFields,
     type MediaFileDetail
 } from "@/types/media.type";
+import { escapeLike } from "../utils/server";
 
 type MediaFileInputFields = FieldInputTypes["public"]["MediaFile"];
 
@@ -30,10 +31,6 @@ export type MediaFileQuery = Pick<MediaFileInputFields,
     createdFrom?: MediaFileInputFields["createdAt"];
     createdTo?: MediaFileInputFields["createdAt"];
 };
-
-function escapeLike(value: string) {
-    return value.replace(/[\\%_]/g, (char) => `\\${char}`);
-}
 
 export class MediaFileDao {
     /** @description 插入媒体数据 */
@@ -67,7 +64,7 @@ export class MediaFileDao {
                 conditions.push(file.originalName.like(`%${escapeLike(query.originalName)}%`));
             }
             if (query.mimeType) {
-                conditions.push(file.mimeType.like(`%${escapeLike(query.mimeType)}%`));
+                conditions.push(file.mimeType.like(`${escapeLike(query.mimeType)}%`));
             }
             if (query.createdFrom) {
                 conditions.push(file.createdAt.gte(query.createdFrom));

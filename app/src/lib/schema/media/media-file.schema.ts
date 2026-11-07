@@ -9,4 +9,12 @@ export const mediaFileSchema = z.object({
     durationMs: z.number().int().positive().nullable().default(null),
 });
 
+export const mediaFileQuerySchema = z.object({
+    originalName: z.string().trim().min(1).optional(),
+    mimeType: z.string().trim().min(1).optional(),
+    createdFrom: z.iso.datetime().optional(),
+    createdTo: z.iso.datetime().optional(),
+})
+
 export type MediaFileDTO = z.output<typeof mediaFileSchema>;
+export type MediaFileQueryDTO = z.output<typeof mediaFileQuerySchema>;

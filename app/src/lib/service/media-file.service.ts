@@ -1,8 +1,11 @@
 import "server-only";
 import { serverEnvConfig } from "@/config/server-env.config";
 import qiniu, { rs as qiniuRs } from "qiniu";
-import { MediaFileDTO } from "@/lib/schema/media/media-file.schema";
-import { MediaFileDao, MediaFileQuery, type MediaFileInput } from "../dao";
+import {
+    MediaFileDTO,
+    MediaFileQueryDTO
+ } from "@/lib/schema/media/media-file.schema";
+import { MediaFileDao, type MediaFileInput } from "../dao";
 import { ConflictError, NotFoundError } from "../errors";
 import { MediaFileDetail, MediaFileList } from "@/types/media.type";
 import { PaginationQuery, PaginationResponse } from "@/types/globals.type";
@@ -39,7 +42,7 @@ export class MediaFileService {
 
     /** @description 分页查询媒体文件 */
     static async pagination(
-        dto: Partial<MediaFileQuery> = {},
+        dto: MediaFileQueryDTO = {},
         page: PaginationQuery
     ): Promise<PaginationResponse<MediaFileList>> {
         const { list, total } = await MediaFileDao.query(dto, page);
