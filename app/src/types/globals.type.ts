@@ -19,4 +19,4 @@ export type PaginationResponse<T> = {
     pageSize: number;
 };
 
-export type MatchModule = | "exact" | "prefix" | "regex" | "contain";
+export type MatchModule = | "exact" | "prefix" | "regex" | "contains" | "suffix";

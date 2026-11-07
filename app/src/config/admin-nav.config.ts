@@ -18,7 +18,11 @@ export type NavGroupConfig = {
     children:NavItemConfig[]
 }
 
-type AdminNavConfig = NavItemConfig | NavGroupConfig;
+export type AdminNavConfig = NavItemConfig | NavGroupConfig;
+
+export function isNavGroup(item: AdminNavConfig): item is NavGroupConfig {
+    return "children" in item;
+}
 
 export const adminNavCondif: AdminNavConfig[] = [
     {
