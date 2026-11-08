@@ -20,7 +20,7 @@ import { Spinner } from "@/components/ui/spinner";
 export function AdminMediaUpload() {
     const [errors, setErrors] = useState<string[]>([]);
     const [viewMode, setViewMode] = useState<ViewMode>("grid");
-    const { mutate: uploadMedia, isPending } = useMutation({
+    const { mutateAsync: uploadMedia } = useMutation({
         ...MediaMutation.upload()
     });
     const [state, actions] = useFileUpload({
@@ -31,9 +31,23 @@ export function AdminMediaUpload() {
             setErrors(errors);
         },
         onFilesAdded: async (files) => {
-            uploadMedia(files)
+            const queue = files.filter((file) => file.status === "idle" || file.status === "error");
+            await Promise.allSettled(queue.map(async (item) => {
+                actions.patchFile(item.id, { status: "uploading" });
+                try {
+                    await uploadMedia(item);
+                    actions.patchFile(item.id, { status: "success" });
+                } catch (error) {
+                    actions.patchFile(item.id, {
+                        status: "error",
+                        error: error instanceof Error && error.message ? error.message : "上传失败",
+                    });
+                }
+            }));
         }
     });
+    const isUploading = state.files.some((file) => file.status === "uploading");
+    const hasPending = state.files.some((file) => file.status === "idle" || file.status === "error");
     const toggleViewMode = () => {
         setViewMode(viewMode === "grid" ? "list" : "grid");
     }
@@ -63,9 +77,9 @@ export function AdminMediaUpload() {
                 stopEventBubble(e);
                 actions.handleFilesAdded(state.files);
             }}
-            disabled={state.files.length === 0 || state.isDragging || isPending}
+            disabled={state.files.length === 0 || state.isDragging || isUploading || !hasPending}
         >
-            {isPending ? (
+            {isUploading ? (
                 <><Spinner />Uploading...</>
             ) : (
                 <><Upload />Upload</>

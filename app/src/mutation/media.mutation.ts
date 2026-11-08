@@ -13,39 +13,31 @@ export class MediaMutation {
     static upload() {
         return mutationOptions({
             mutationKey: MEDIA_FILE_MUTATION_KEY.create(),
-            mutationFn: async (files: FileMetadata[]) => {
-                const results = await Promise.allSettled(files.map(async (item) => {
-                    try {
-                        const storageKey = Qiniu.buildObjectKey(item.id, item.file.name);
-                        const hash = await Qiniu.getEtag(item.file);
-                        const token = await getUploadToken({
-                            key: storageKey,
-                            hash
-                        });
-                        if (!token.ok || !token.data) {
-                            throw new Error(token.ok ? "上传凭证为空" : token.error.message);
-                        }
-                        const uploadRes = await Qiniu.uploadToQiniu(item.file, token.data, storageKey);
-                        const created = await createMediaFile({
-                            originalName: item.file.name,
-                            storageKey: uploadRes.key,
-                            hash: uploadRes.hash,
-                            mimeType: item.file.type,
-                            size: uploadRes.size,
-                            durationMs: null,
-                        });
-                        if (!created.ok) {
-                            throw new Error(created.error.message);
-                        }
-                    } catch (error) {
-                        throw new Error(`${item.file.name}: ${errorMessage(error, "上传失败")}`);
+            mutationFn: async (item: FileMetadata) => {
+                try {
+                    const storageKey = Qiniu.buildObjectKey(item.id, item.file.name);
+                    const hash = await Qiniu.getEtag(item.file);
+                    const token = await getUploadToken({
+                        key: storageKey,
+                        hash
+                    });
+                    if (!token.ok || !token.data) {
+                        throw new Error(token.ok ? "上传凭证为空" : token.error.message);
                     }
-                }));
-                const messages = results.flatMap((result) =>
-                    result.status === "rejected" ? [errorMessage(result.reason, "上传失败")] : []
-                );
-                if (messages.length > 0) {
-                    throw new Error(messages.join("\n"));
+                    const uploadRes = await Qiniu.uploadToQiniu(item.file, token.data, storageKey);
+                    const created = await createMediaFile({
+                        originalName: item.file.name,
+                        storageKey: uploadRes.key,
+                        hash: uploadRes.hash,
+                        mimeType: item.file.type,
+                        size: uploadRes.size,
+                        durationMs: null,
+                    });
+                    if (!created.ok) {
+                        throw new Error(created.error.message);
+                    }
+                } catch (error) {
+                    throw new Error(`${item.file.name}: ${errorMessage(error, "上传失败")}`);
                 }
             },
             onError: (error) => {
