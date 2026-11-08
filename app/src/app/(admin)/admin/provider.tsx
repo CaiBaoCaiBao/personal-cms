@@ -10,7 +10,9 @@ export function Provider({ children }: { children: React.ReactNode }) {
             <AdminSidebar />
             <SidebarInset>
                 <AdminHeaderFrame >
-                    {children}
+                    <div className="p-2">
+                        {children}
+                    </div>
                 </AdminHeaderFrame>
             </SidebarInset>
         </SidebarProvider>

@@ -41,6 +41,6 @@ export const adminNavCondif: AdminNavConfig[] = [
         label: "Media Management",
         icon: Image,
         href: "/admin/media",
-        match: "exact",
+        match: "prefix",
     }
 ]

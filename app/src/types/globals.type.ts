@@ -20,3 +20,5 @@ export type PaginationResponse<T> = {
 };
 
 export type MatchModule = | "exact" | "prefix" | "regex" | "contains" | "suffix";
+
+export type ViewMode = "grid" | "list";
