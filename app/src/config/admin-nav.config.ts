@@ -1,4 +1,8 @@
-import { LayoutDashboard, type LucideIcon } from "lucide-react";
+import {
+    LayoutDashboard,
+    Image,
+    type LucideIcon
+} from "lucide-react";
 import type { MatchModule } from "@/types/globals.type";
 
 export type NavItemConfig = {
@@ -30,6 +34,13 @@ export const adminNavCondif: AdminNavConfig[] = [
         label: "Dashboard",
         icon: LayoutDashboard,
         href: "/admin",
+        match: "exact",
+    },
+    {
+        id: "media",
+        label: "Media Management",
+        icon: Image,
+        href: "/admin/media",
         match: "exact",
     }
 ]
