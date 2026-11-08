@@ -97,4 +97,43 @@ export class Qiniu {
         return body;
     }
 
+    /**
+     * @description 按七牛 qetag 计算文件摘要。不超过 4MiB 为 0x16 + SHA-1(全文)；超过 4MiB 时按 4MiB 分块，结果为 0x96 + SHA-1(各块 SHA-1 的拼接)。
+     */
+    static async getEtag(file: Blob): Promise<string> {
+        const blockSize = 4 * 1024 * 1024;
+        const sha1 = async (content: BufferSource) => {
+            return new Uint8Array(await crypto.subtle.digest("SHA-1", content));
+        };
+        const blockHashes: Uint8Array[] = [];
+
+        if (file.size === 0) {
+            blockHashes.push(await sha1(new Uint8Array()));
+        } else {
+            const blockCount = Math.ceil(file.size / blockSize);
+            for (let index = 0; index < blockCount; index++) {
+                const start = index * blockSize;
+                const end = Math.min(start + blockSize, file.size);
+                blockHashes.push(await sha1(await file.slice(start, end).arrayBuffer()));
+            }
+        }
+
+        let prefix = 0x16;
+        let digest = blockHashes[0];
+        if (blockHashes.length > 1) {
+            prefix = 0x96;
+            const joined = new Uint8Array(blockHashes.length * digest.length);
+            blockHashes.forEach((hash, index) => joined.set(hash, index * digest.length));
+            digest = await sha1(joined);
+        }
+
+        const payload = new Uint8Array(1 + digest.length);
+        payload[0] = prefix;
+        payload.set(digest, 1);
+        let binary = "";
+        for (const byte of payload) {
+            binary += String.fromCharCode(byte);
+        }
+        return btoa(binary).replace(/\//g, "_").replace(/\+/g, "-");
+    }
 }

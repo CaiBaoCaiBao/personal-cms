@@ -13,16 +13,25 @@ import {
 import { ViewMode } from "@/types/globals.type";
 import { GridData } from "./grid-data";
 import { ListData } from "./list-data";
+import { useMutation } from "@tanstack/react-query";
+import { MediaMutation } from "@/mutation/media.mutation";
+import { Spinner } from "@/components/ui/spinner";
 
 export function AdminMediaUpload() {
     const [errors, setErrors] = useState<string[]>([]);
     const [viewMode, setViewMode] = useState<ViewMode>("grid");
+    const { mutate: uploadMedia, isPending } = useMutation({
+        ...MediaMutation.upload()
+    });
     const [state, actions] = useFileUpload({
         multiple: true,
         auto: false,
         maxSize: 1024 * 1024 * 2, // 2MB
         onError: (errors) => {
             setErrors(errors);
+        },
+        onFilesAdded: async (files) => {
+            uploadMedia(files)
         }
     });
     const toggleViewMode = () => {
@@ -54,9 +63,14 @@ export function AdminMediaUpload() {
                 stopEventBubble(e);
                 actions.handleFilesAdded(state.files);
             }}
-            disabled={state.files.length === 0 || state.isDragging}
+            disabled={state.files.length === 0 || state.isDragging || isPending}
         >
-            <Upload />Upload
+            {isPending ? (
+                <><Spinner />Uploading...</>
+            ) : (
+                <><Upload />Upload</>
+            )}
+
         </Button>
     ))
     return (
