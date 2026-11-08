@@ -6,3 +6,4 @@ export { isMatch } from "./match";
 export * from "./generate-id";
 export * from "./stop-event-bubble";
 export * from "./get-file-type";
+export * from "./get-client-query";
