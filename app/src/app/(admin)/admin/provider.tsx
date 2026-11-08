@@ -10,7 +10,7 @@ export function Provider({ children }: { children: React.ReactNode }) {
             <AdminSidebar />
             <SidebarInset>
                 <AdminHeaderFrame >
-                    <div className="p-2">
+                    <div className="p-2 overflow-y-auto">
                         {children}
                     </div>
                 </AdminHeaderFrame>

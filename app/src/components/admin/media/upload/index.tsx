@@ -26,7 +26,7 @@ export function AdminMediaUpload() {
     const [state, actions] = useFileUpload({
         multiple: true,
         auto: false,
-        maxSize: 1024 * 1024 * 2, // 2MB
+        maxSize: 1024 * 1024 * 20, // 20MB
         onError: (errors) => {
             setErrors(errors);
         },
