@@ -29,12 +29,28 @@ export const createMediaFile = actionHandler({
     }
 })
 
+export const removeMediaFile = actionHandler({
+    module: "MEDIA_FILE",
+    handler: async (id: string) => {
+        await MediaFileService.remove(id);
+        return { ok: true };
+    }
+})
+
 export const getMediaPagination = actionHandler({
     module: "MEDIA_FILE",
     schema: mediaFileQuerySchema.extend(paginationSchema.shape),
     handler: async (input) => {
         const { pageIndex, pageSize, ...query } = input;
         const data = await MediaFileService.pagination(query, { pageIndex, pageSize })
+        return { ok: true, data };
+    }
+})
+
+export const getMediaCategories = actionHandler<void, string[]>({
+    module: "MEDIA_FILE",
+    handler: async () => {
+        const data = await MediaFileService.listCategories();
         return { ok: true, data };
     }
 })

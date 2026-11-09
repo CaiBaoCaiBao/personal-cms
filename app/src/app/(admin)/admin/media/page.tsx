@@ -7,9 +7,12 @@ import {
 } from "@tanstack/react-query";
 import { Suspense } from "react";
 import { MediaQuery } from "@/query/media.query";
+import { MEDIA_FILE_PAGE_SIZE } from "@/constant/media.constant";
 import { AdminHeaderSlot } from "@/components/admin/admin-header";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { getFileType, getFileTypeCategory } from "@/lib/utils";
+
 export default function Page() {
     return (
         <>
@@ -33,21 +36,18 @@ export default function Page() {
 async function Prefetch() {
     await io();
     const queryClient = new QueryClient();
-    const data = (await queryClient.query(MediaQuery.pagination({}, { pageIndex: 0, pageSize: 10 }))) ?? {
-        data: [],
-        total: 0,
-        pageIndex: 0,
-        pageSize: 10,
-    };
+    const [data] = await Promise.all([
+        queryClient.query(MediaQuery.pagination({}, {
+            pageIndex: 0,
+            pageSize: MEDIA_FILE_PAGE_SIZE,
+        })),
+        queryClient.query(MediaQuery.categories()),
+    ]);
+
     if (!data) return null;
     return (
         <HydrationBoundary state={dehydrate(queryClient)}>
-            <AdminMedia
-                initialFiles={data.data}
-                total={data.total}
-                pageIndex={data.pageIndex}
-                pageSize={data.pageSize}
-            />
+            <AdminMedia />
         </HydrationBoundary>
     )
 }

@@ -121,6 +121,19 @@ export class MediaFileDao {
         }
     }
 
+    /** @description 查询媒体文件类型分类 */
+    static async queryCategories(): Promise<string[]> {
+        try {
+            const rows = await db.orm.public.MediaFile
+                .distinct("mimeType")
+                .select("mimeType")
+                .all();
+            return rows.map((row) => row.mimeType);
+        } catch (error) {
+            throw mapPrismaError(error, "MEDIA_FILE");
+        }
+    }
+
     /** @description 删除媒体数据 */
     static async delete(id: string): Promise<string> {
         try {

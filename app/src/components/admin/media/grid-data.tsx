@@ -8,19 +8,18 @@ import {
     CardDescription,
 } from "@/components/ui/card";
 import { formatBytes } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
 import { FileType } from "@/components/file-type";
 import { getFileType, getFileTypeCategory } from "@/lib/utils";
 import { MIME_FAMILIES } from "@/components/file-type/constant";
 import { AspectRatio } from "@/components/ui/aspect-ratio";
-
+import { MediaFileActions } from "./actions";
 interface Props {
     item: MediaFileList,
     onRemove: (id: string) => void,
+    isDeleting: boolean,
 }
 
-export function GridData({ item, onRemove }: Props) {
+export function GridData({ item, onRemove, isDeleting }: Props) {
     const fileType = getFileType(item.originalName);
     const category = getFileTypeCategory(fileType);
     const isImage = category === MIME_FAMILIES.image;
@@ -38,16 +37,7 @@ export function GridData({ item, onRemove }: Props) {
                         <FileType type={fileType} size="xl" />
                     </div>
                 )}
-                <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon-xs"
-                    aria-label="Remove"
-                    className="absolute top-2 right-2 bg-background/90 shadow-sm backdrop-blur-sm"
-                    onClick={() => onRemove(item.id)}
-                >
-                    <X />
-                </Button>
+                <MediaFileActions item={item} onRemove={onRemove} className="absolute top-2 right-2 bg-background/90 shadow-sm backdrop-blur-sm" />
             </AspectRatio>
             <CardHeader className="min-w-0 py-(--card-spacing)">
                 <CardTitle className="truncate text-sm font-medium">

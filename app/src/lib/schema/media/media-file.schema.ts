@@ -9,7 +9,7 @@ const objectKeySchema = z.string().regex(
 export const mediaFileSchema = z.object({
     originalName: z.string().trim().min(1),
     storageKey: objectKeySchema,
-    hash:z.string().trim().min(1),
+    hash: z.string().trim().min(1),
     mimeType: z.string().trim().min(1),
     size: z.number().int().positive(),
     durationMs: z.number().int().positive().nullable().default(null),
@@ -24,8 +24,8 @@ export const mediaFileQuerySchema = z.object({
 
 export const uploadTokenSchema = z.object({
     key: objectKeySchema,
-    hash:z.string().trim().min(1),
-    expire:z.number().int().positive().optional(),
+    hash: z.string().trim().min(1),
+    expire: z.number().int().positive().optional(),
 })
 
 export type UploadTokenForm = z.input<typeof uploadTokenSchema>;

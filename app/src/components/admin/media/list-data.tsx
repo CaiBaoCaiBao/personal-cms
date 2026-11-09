@@ -14,6 +14,7 @@ import { X } from "lucide-react";
 import { FileType } from "@/components/file-type";
 import { getFileType, getFileTypeCategory } from "@/lib/utils";
 import { MIME_FAMILIES } from "@/components/file-type/constant";
+import { MediaFileActions } from "./actions";
 
 interface Props {
     item: MediaFileList;
@@ -43,15 +44,7 @@ export function ListData({
                 </ItemDescription>
             </ItemContent>
             <ItemActions>
-                <Button
-                    type="button"
-                    variant="destructive"
-                    size="icon-sm"
-                    aria-label="Remove"
-                    onClick={() => onRemove(item.id)}
-                >
-                    <X />
-                </Button>
+                <MediaFileActions item={item} onRemove={onRemove} />
             </ItemActions>
         </Item>
     )

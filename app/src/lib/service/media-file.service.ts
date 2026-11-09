@@ -4,7 +4,7 @@ import qiniu, { rs as qiniuRs } from "qiniu";
 import {
     MediaFileDTO,
     MediaFileQueryDTO
- } from "@/lib/schema/media/media-file.schema";
+} from "@/lib/schema/media/media-file.schema";
 import { MediaFileDao, type MediaFileInput } from "../dao";
 import { ConflictError, NotFoundError } from "../errors";
 import { MediaFileDetail, MediaFileList } from "@/types/media.type";
@@ -49,6 +49,11 @@ export class MediaFileService {
             pageIndex: page.pageIndex,
             pageSize: page.pageSize,
         }
+    }
+
+    /** @description 库里实际出现过的文件类型 */
+    static async listCategories(): Promise<string[]> {
+        return MediaFileDao.queryCategories();
     }
 
     /** @description 获取媒体文件详情 */
