@@ -11,6 +11,30 @@ enum ContentStatus {
   ARCHIVED
 }
 
+enum MediaStatus {
+  DRAFT
+  READY
+  ARCHIVED
+}
+
+enum MediaKind {
+  video
+}
+
+model MediaAsset {
+  id String @id @onCreate(uuid(7))
+  title String
+  description String?
+  kind String
+  status MediaStatus
+  createdAt TimestamptzString() @default(now()) @map("created_at")
+  updatedAt temporal.UpdatedAt @map("updated_at")
+
+  currentFileId String?
+  currentFile MediaFile? @relation(fields: [currentFileId], references: [id])
+  
+}
+
 model MediaFile {
   id String @id @onCreate(uuid(7))
   originalName String @map("original_name")

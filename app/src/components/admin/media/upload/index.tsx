@@ -6,23 +6,17 @@ import { useState } from "react";
 import { stopEventBubble } from "@/lib/utils";
 import {
     Upload,
-    X,
     LayoutGrid,
     LayoutList,
 } from "lucide-react";
 import { ViewMode } from "@/types/globals.type";
 import { GridData } from "./grid-data";
 import { ListData } from "./list-data";
-import { useMutation } from "@tanstack/react-query";
-import { MediaMutation } from "@/mutation/media.mutation";
 import { Spinner } from "@/components/ui/spinner";
 
 export function AdminMediaUpload() {
     const [errors, setErrors] = useState<string[]>([]);
     const [viewMode, setViewMode] = useState<ViewMode>("grid");
-    const { mutateAsync: uploadMedia } = useMutation({
-        ...MediaMutation.upload()
-    });
     const [state, actions] = useFileUpload({
         multiple: true,
         auto: false,
@@ -31,19 +25,19 @@ export function AdminMediaUpload() {
             setErrors(errors);
         },
         onFilesAdded: async (files) => {
-            const queue = files.filter((file) => file.status === "idle" || file.status === "error");
-            await Promise.allSettled(queue.map(async (item) => {
-                actions.patchFile(item.id, { status: "uploading" });
-                try {
-                    await uploadMedia(item);
-                    actions.patchFile(item.id, { status: "success" });
-                } catch (error) {
-                    actions.patchFile(item.id, {
-                        status: "error",
-                        error: error instanceof Error && error.message ? error.message : "上传失败",
-                    });
-                }
-            }));
+            // const queue = files.filter((file) => file.status === "idle" || file.status === "error");
+            // await Promise.allSettled(queue.map(async (item) => {
+            //     actions.patchFile(item.id, { status: "uploading" });
+            //     try {
+            //         await uploadMedia(item);
+            //         actions.patchFile(item.id, { status: "success" });
+            //     } catch (error) {
+            //         actions.patchFile(item.id, {
+            //             status: "error",
+            //             error: error instanceof Error && error.message ? error.message : "上传失败",
+            //         });
+            //     }
+            // }));
         }
     });
     const isUploading = state.files.some((file) => file.status === "uploading");

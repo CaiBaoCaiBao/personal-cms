@@ -44,7 +44,7 @@ export function GridData({ item, onRemove, isDeleting }: Props) {
                     {item.originalName}
                 </CardTitle>
                 <CardDescription className="text-xs">
-                    {formatBytes(item.size)}
+                    {formatBytes(item.size)} - {item.createdAt}
                 </CardDescription>
             </CardHeader>
         </Card>

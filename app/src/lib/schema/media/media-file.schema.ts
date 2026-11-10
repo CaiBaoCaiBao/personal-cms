@@ -16,7 +16,7 @@ export const mediaFileSchema = z.object({
 });
 
 export const mediaFileQuerySchema = z.object({
-    originalName: z.string().trim().min(1).optional(),
+    originalName: z.string().trim().optional(),
     mimeType: z.string().trim().min(1).optional(),
     createdFrom: z.iso.datetime().optional(),
     createdTo: z.iso.datetime().optional(),
