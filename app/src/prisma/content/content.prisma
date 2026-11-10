@@ -1,0 +1,21 @@
+// use prisma-8
+
+model Content {
+  id String @id @onCreate(uuid(7))
+  title String
+  type ContentType
+  status ContentStatus
+  jsonContent JsonContent?
+  htmlContent HtmlContent?
+  createdAt TimestamptzString @default(now())  @map("created_at")
+  updatedAt temporal.UpdatedAt @map("updated_at")
+  publishedAt TimestamptzString? @map("published_at")
+  archivedAt TimestamptzString? @map("archived_at")
+  deletedAt TimestamptzString? @map("deleted_at")
+
+  articleId String? @map("article_id")
+  article Article? @relation(fields: [articleId], references: [id])
+
+  @@index([title])
+  @@map("contents")
+}

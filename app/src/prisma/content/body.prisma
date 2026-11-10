@@ -1,0 +1,17 @@
+// use prisma-8
+
+model JsonContent {
+  contentId String @id @map("content_id")
+  body Json
+  content Content @relation(fields: [contentId], references: [id])
+
+  @@map("json_contents")
+}
+
+model HtmlContent {
+  contentId String @id @map("content_id")
+  body String
+  content Content @relation(fields: [contentId], references: [id])
+
+  @@map("html_contents")
+}

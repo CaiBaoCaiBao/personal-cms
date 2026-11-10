@@ -1,0 +1,14 @@
+// use prisma-8
+
+model Article{
+  id String @id @onCreate(uuid(7))
+  slug String @unique
+  coverImgId String? @map("cover_img_id")
+  coverImg MediaFile? @relation("ArticleCover", fields: [coverImgId], references: [id], onDelete: SetNull)
+
+  contentId String @unique @map("content_id")
+  content Content @relation(fields: [contentId], references: [id])
+
+  @@index([coverImgId])
+  @@map("articles")
+}

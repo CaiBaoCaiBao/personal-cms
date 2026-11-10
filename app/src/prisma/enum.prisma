@@ -1,0 +1,12 @@
+// use prisma-8
+
+enum ContentType {
+  ARTICLE
+  LONG_FORM
+}
+
+enum ContentStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
