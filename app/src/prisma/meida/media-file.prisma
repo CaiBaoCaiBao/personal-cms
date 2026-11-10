@@ -14,7 +14,7 @@ model MediaFile {
   url String
   checksum String
   mime String
-  status String @default(DRAFT)
+  status String
   size BigInt
   width Int?
   height Int?
